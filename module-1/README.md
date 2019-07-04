@@ -1,42 +1,42 @@
-# Module 1: IDE Setup and Static Website Hosting
+# Módulo 1: IDE Setup and Static Website Hosting
 
 ![Architecture](/images/module-1/architecture-module-1.png)
 
-**Time to complete:** 20 minutes
+**Tempo estimado de duração:** 20 minutos
 
-**Services used:**
+**Serviços usados:**
 * [AWS Cloud9](https://aws.amazon.com/cloud9/)
 * [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/)
 
-In this module, follow the instructions to create your cloud-based IDE on [AWS Cloud9](https://aws.amazon.com/cloud9/) and deploy the first version of the static Mythical Mysfits website.  [Amazon S3](https://aws.amazon.com/s3/) is a highly durable, highly available, and inexpensive object storage service that can serve stored objects directly via HTTP. This makes it wonderfully useful for serving static web content (html, js, css, media content, etc.) directly to web browsers for sites on the Internet.  We will utilize S3 to host the content for our Mythical Mysfits website.
+Neste módulo siga as instruções para criar seu IDE baseado na nuvem com o [AWS Cloud9](https://aws.amazon.com/cloud9/) e lance a primeira versão do website estático Mythical Mysfits. O [Amazon S3](https://aws.amazon.com/s3/) é um serviço de armazenamento de objetos barato e altamente durável e disponível que pode entregar objetos diretamente via HTTP. Isso o torna incrivelmente útil para entregar conteúdos web estáticos (html, js, css, conteúdos de mídia, etc.) diretamente para navegadores web directly to web browsers for sites on the Internet.  We will utilize S3 to host the content for our Mythical Mysfits website.
 
-### Getting Started
+### Começando
 
-#### Sign In to the AWS Console
-To begin, sign in to the [AWS Console](https://console.aws.amazon.com) for the AWS account you will be using in this workshop.
+#### Faça login AWS Console
+Para começar, faça login no [AWS Console](https://console.aws.amazon.com) com a conta AWS que você usará neste workshop.
 
-This web application can be deployed in any AWS region that supports all the services used in this application. The supported regions include:
+Essa aplicação web pode ser implantada em qualquer região AWS que region that supports all the services used in this application. The supported regions include:
 
 * us-east-1 (N. Virginia)
 * us-east-2 (Ohio)
 * us-west-2 (Oregon)
 * eu-west-1 (Ireland)
 
-Select a region from the dropdown in the upper right corner of the AWS Management Console.
+Selecione uma região do menu (dropdown) no canto superior direito do AWS Management Console.
 
-### Creating your Mythical Mysifts IDE
+### Criando sua IDE Mythical Mysifts
 
-#### Create a new AWS Cloud9 Environment
+#### Crie um novo Ambiente AWS Cloud9
 
- On the AWS Console home page, type **Cloud9** into the service search bar and select it:
+ Na página inicial do AWS Console, digite **Cloud9** na barra de pesquisa e selecione o serviço:
  ![aws-console-home](/images/module-1/cloud9-service.png)
 
 
-Click **Create Environment** on the Cloud9 home page:
+Clique **Create Environment** na página inicial do Cloud9:
 ![cloud9-home](/images/module-1/cloud9-home.png)
 
 
-Name your environment **MythicalMysfitsIDE** with any description you'd like, and click **Next Step**:
+Nomeie seu ambiente como **MythicalMysfitsIDE**, use qualquer descrição que você quiser e clique em **Next Step**:
 ![cloud9-name](/images/module-1/cloud9-name-ide.png)
 
 
@@ -44,7 +44,7 @@ Leave the Environment settings as their defaults and click **Next Step**:
 ![cloud9-configure](/images/module-1/cloud9-configure-env.png)
 
 
-Click **Create Environment**:
+Clique em **Create Environment**:
 ![cloud9-review](/images/module-1/cloud9-review.png)
 
 
