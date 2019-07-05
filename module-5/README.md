@@ -179,7 +179,7 @@ Para ver as gravações que foram processados, eles chegarão ao bucket S3 de de
 
 Isso concluí o Módulo 5.
 
-### [Prossiga para o Módulo 5](/module-6)
+### [Prossiga para o Módulo 6](/module-6)
 
 
 #### [AWS Developer Center](https://developer.aws)
