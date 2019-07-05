@@ -154,12 +154,15 @@ Depois de fazer as alterações necessárias no código e salvar o arquivo `mysf
 Depois de ter emitido esses dois comandos, envie mais algumas perguntas em seu Website Mysfits. Algumas dessas perguntas não serão exibidas na sua caixa de entrada, pois seu código novo e terrível gerou um erro!
 
 Se você visitar o console do X-Ray novamente, perceberá que o mapa de serviço da função Lambda MysfitPostQuestionsFunction tem um anel ao seu redor que não é mais apenas Verde. Isso porque respostas de erro foram geradas lá. O X-Ray fornecerá a você uma representação visual da integridade geral do serviço em todos os serviços instrumentados em seu mapa de serviço:
+
 ![X-Ray Errors](/images/module-6/x-ray-errors.png)
 
 Se você clicar nesse serviço no mapa de serviço, perceberá que no lado direito do console do X-Ray você pode visualizar os rastreamentos que correspondem à latência geral em destaque mostrada no gráfico de latência do serviço e/ou ao código de status em que você está interessado.  Aumente o zoom do gráfico de latência para que o sinal em torno de 5 segundos esteja dentro do gráfico e / ou selecione a caixa de seleção de Erro e clique em **View traces**:
+
 ![View Traces](/images/module-6/view-traces.png)
 
 Isso levará você ao painel de Rastreamento, onde você poderá explorar o ciclo de vida de solicitações específicas, ver o gasto de latência em cada segmento do serviço e visualizar a exceção reportada e o rastreamento da stack associada. Clique em qualquer um dos IDs de Rastreamentos em que a resposta é reportada como 502, depois na página subseqüente **Detalhes do Rastreamento**, clique em **hangingException** para visualizar esse subsegmento específico onde a exceção foi lançada em nosso código:
+
 ![Exception](/images/module-6/exception.png)
 
 Parabéns, você completou o módulo 6!

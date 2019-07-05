@@ -59,6 +59,7 @@ Clique no radio button próximo à instância **MythicalMysfits-SageMaker-Notebo
 **NOTE**: que para este workshop, criamos a instância de notebook para permitir o acesso direto via Internet, executando em uma VPC gerenciada pelo serviço. Para obter mais detalhes sobre como acessar uma instância do notebook por meio de um VPC Interface Endpoint, caso deseje para caso de uso futuro, visite [esta página da documentação.](https://docs.aws.amazon.com/sagemaker/latest/dg/notebook-interface-endpoint.html).
 
 Com o Jupyter aberto, você será apresentado à seguinte página inicial para sua instância de notebook:
+
 ![Jupyter Home](/images/module-7/jupyter-home.png)
 
 Clique no botão **Upload**, e então encontre o arquivo que você baixou na seção anterior `mysfit_recommendations_knn.ipynb` e clique em **Upload** na linha do arquivo. Isso criará um novo documento do Notebook na instância de notebook dentro do Jupyter que usa o arquivo do notebook que você acabou de fazer upload.
