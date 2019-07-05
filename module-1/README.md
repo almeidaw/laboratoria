@@ -48,7 +48,7 @@ Clique em **Create Environment**:
 ![cloud9-review](/images/module-1/cloud9-review.png)
 
 
-When the IDE has finished being created for you, you'll be presented with a welcome screen that looks like this:
+Quando a criação da IDE tiver terminado, uma tela de boas vindas será apresentada para você. Ela se parece com essa:
 ![cloud9-welcome](/images/module-1/cloud9-welcome.png)
 
 #### Clonando o repositório do Wokshop Mythical Mysfits
