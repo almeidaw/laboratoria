@@ -1,46 +1,47 @@
-# Build a Modern Application on AWS (Python)
+# Construa uma Aplicação Moderna na AWS (Python)
 
 ![mysfits-welcome](/images/module-1/mysfits-welcome.png)
 
-### Welcome to the **Python** version of the Build a Modern Application on AWS Workshop!
+### Bem-vinda(o) à versão em **Python** do Construa uma Aplicação Moderna no Workshop AWS!
 
-**AWS Experience: Beginner**
+**Experiência em AWS: Iniciante**
 
-**Time to Complete: 3-4 hours**
+**Tempo para Completar: 3-4 horas**
 
-**Cost to Complete: Many of the services used are included in the AWS Free Tier. For those that are not, the sample application will cost, in total, less than $1/day.**
+**Custo para Completar: Muitos dos serviços usados estão inclusos no AWS Free Tier. Para aqueles que não estão, a aplicação de exemplo custará, no total, menos de US$1/dia.**
 
-**Tutorial Prereqs:**
+**Pré-requisitos do Tutorial:**
 
-* **An AWS Account and Administrator-level access to it**
+* **Uma conta AWS com acesso de Administrator**
 
-Please be sure to terminate all of the resources created during this workshop to ensure that you are no longer charged.
+Por favor, certifique-se de desligar todos os recursos criados durante esse workshop para garantir que não haja cobranças adicionais.
 
-**Note:**  Estimated workshop costs assume little to no traffic will be served by your demo website created as part of this workshop.
+**Nota:**  Os custos estimados do workshop assumem que seu demo website criado como parte desse workshop servirá um tráfego nulo ou pequeno.
 
-### Application Architecture
+### Arquitetura da Aplicação
 
 ![Application Architecture](/images/arch-diagram.png)
 
-The Mythical Mysfits website serves it's static content from Amazon S3 with Amazon CloudFront, provides a microservice API backend deployed as a container through AWS Fargate on Amazon ECS, stores data in a managed NoSQL database provided by Amazon DynamoDB, with authentication and authorization for the application enabled through AWS API Gateway and it's integration with Amazon Cognito.  The user website clicks will be sent as records to an Amazon Kinesis Firehose Delivery stream where those records will be processed by serverless AWS Lambda functions and then stored in Amazon S3.
+O website Mythical Mysfits entrega seus conteúdo estático a partir do Amazon S3 com o Amazon CloudFront, possui uma API de micro-serviço no backend lançado como um container usando o AWS Fargate no Amazon ECS, armazena dados em uma banco de dados NoSQL gerenciado criado no Amazon DynamoDB, com autenticação e autorização para a aplicação feitas através do AWS API Gateway e sua integração com o Amazon Cognito.  Os cliques do usuário do website serão enviados como registros (records) para um fluxo de entrega do Amazon Kinesis Firehose, onde eles serão processados por funções AWS Lambda, que é serverless, e então armazenados no Amazon S3.
 
-You will be creating and deploying changes to this application completely programmatically. You will use the AWS Command Line Interface to execute commands that create the required infrastructure components, which includes a fully managed CI/CD stack utilizing AWS CodeCommit, CodeBuild, and CodePipeline.  Finally, you will complete the development tasks required all within your own browser by leveraging the cloud-based IDE, AWS Cloud9.
+Você irá criar e fazer o deploy (implantar) de mudanças de sua aplicação de maneira totalmente programática. Você usará o AWS Command Line Interface para executar comandos para criar os componentes de infraestrutura necessários, incluindo um stack CI/CD totalmente gerenciado utilizando o AWS CodeCommit, CodeBuild, e CodePipeline. Finalmente você completará todas as tarefas de desenvolvimento exigidas dentro do seu próprio navegador usando a IDE baseada na nuvem AWS Cloud9.  
 
-## Begin the Modern Application Workshop
+## Começar o Workshop de Aplicação Moderna
 
-### [Proceed to Module 1](/module-1)
+### [Ir para o Módulo 1](/module-1)
 
 
-### Workshop Clean-Up (Once Complete)
-Be sure to delete all of the resources created during the workshop in order to ensure that billing for the resources does not continue for longer than you intend.  We recommend that you utilize the AWS Console to explore the resources you've created and delete them when you're ready.  
+### Limpeza do Workshop (Uma vez que você tenha terminado)
+Certifique-se de excluor todos os recursos criados durante o workshop como forma de garantir a cobrança por esses recursos não continue por um período maior do que o planejado. Nós recomendamos que você utilize o Console da AWS para explorar os recursos que voc
+ê criou e excluí-los quando você estiver pronta(o).
 
-For the two cases where you provisioned resources using AWS CloudFormation, you can remove those resources by simply running the following CLI command for each stack:
+Para os dois casos em que você provisionou recursos usando o AWS CloudFormation, você pode removê-los simplesmente rodando o seguinte comando do AWS CLI para cada stack do CloudFormation:
 
 ```
-aws cloudformation delete-stack --stack-name STACK-NAME-HERE
+aws cloudformation delete-stack --stack-name NOME-DA-STACK-AQUI
 ```
 
-To remove all of the created resources, you can visit the following AWS Consoles, which contain resources you've created during the Mythical Mysfits workshop:
+Para remover todos os recursos criados você pode visitar os seguintes consoles da AWS, que contém os recursos que você criou durante o workshop Mythical Mysfits:
 * [AWS Kinesis](https://console.aws.amazon.com/kinesis/home)
 * [AWS Lambda](https://console.aws.amazon.com/lambda/home)
 * [Amazon S3](https://console.aws.amazon.com/s3/home)
@@ -58,7 +59,7 @@ To remove all of the created resources, you can visit the following AWS Consoles
 * [Amazon CloudFront](https://console.aws.amazon.com/cloudfront/home)
 
 
-[Proceed to Module 1](/module-1)
+[Ir para o Módulo 1](/module-1)
 
 
-## [AWS Developer Center](https://developer.aws)
+## [Centro do desenvolvedor da AWS](https://developer.aws)
