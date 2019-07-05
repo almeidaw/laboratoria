@@ -1,10 +1,10 @@
-# Module 6: Tracing Application Requests
+# Módulo 6: Rastreando Requisições da Aplicação
 
 ![Architecture](/images/module-6/x-ray-arch-diagram.png)
 
-**Time to complete:** 45 minutes
+**Tempo para ser Completado:** 45 minutos
 
-**Services used:**
+**Serviços usados:**
 * [AWS CloudFormation](https://aws.amazon.com/cloudformation/)
 * [AWS X-Ray](https://aws.amazon.com/x-ray/)
 * [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)
@@ -16,41 +16,39 @@
 * [AWS Serverless Appliation Model (AWS SAM)](https://github.com/awslabs/serverless-application-model)
 * [AWS SAM Command Line Interface (SAM CLI)](https://github.com/awslabs/aws-sam-cli)
 
-### Overview
-Next, we will show you how to deeply inspect and analyze request behavior on new functionality for the Mythical Mysfits site, using [**AWS X-Ray**](https://aws.amazon.com/kinesis/data-firehose/).  The new functionality will enable users to contact the Mythical Mysfits staff, via a **Contact Us** button we'll place on the site.  Since much of the steps required to create a new microservice to handle receiving user questions mimics activities you've performed earlier in this workshop, we have provided a CloudFormation template that will programmatically create the new service using AWS SAM.
+### Visão geral
+Agora, nós vamos mostrar para vocês como inspecionar e analisar de forma profunda o comportamento de requisições em novas funcionalidades para o website dos Mythical Mysfits, usando o [**AWS X-Ray**](https://aws.amazon.com/kinesis/data-firehose/).  A nova funcionalidade irá habilitar usuários a contatarem a equipe dos Mythical Mysfits, por meio de um botão **Fale Conosco** que colocaremos no website.  Como muitos dos passos necessários para criar um novo microsserviço para lidar com recebimento de questões de usuários refletem atividades que vocês realizaram anteriormente neste workshop, nós preparamos um template do CloudFormation que irá criar o novo serviço programaticamente usando o AWS SAM.
 
-The CloudFormation template includes:
-* An **API Gateway API**:  A new microservice will be created that has a single REST resource, `/questions`.  This API will receive the text of a user question and the email address for the user who submitted it.
-* A **DynamoDB Table**: A new DynamoDB table where the user questions will be stored and persisted.  This DynamoDB table will be created with a [**DynamoDB Stream**](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) enabled.  The stream will provide a real-time event stream for all of the new questions that are stored within the database so that they can be immediately processed.
-* An **AWS SNS Topic**: AWS SNS allows applications to publish messages and to subscribe to message topics.  We will use a new topic as a way to send notifications to a subscribed email address for a email address.
-* Two **AWS Lambda Functions**: One AWS Lambda function will be used as the service backend for the question API requests. The other AWS Lambda function will receive events from the questions DynamoDB table and publish a message for each of them to the above SNS topic.  If you view the CloudFormation resource definitions for these functions in the file `~/environment/aws-modern-application-workshop/module-6/app/cfn/customer-question.yml`, you'll see a Property listed that indicates `Tracing: Active`.  This means that all invocations of the Lambda function will automatically be traced by **AWS X-Ray**.
-* **IAM Roles** required for each of the above resources and actions.
+O template do CloudFormation inclui:
+* Uma **API do API Gateway**: Um novo microsserviço será criado e terá um único recurso REST, `/questions`.
+Essa API receberá o texto de uma pergunta de um usuário e o endereço de e-mail do usuário que a enviou.
+* Uma **Tabela do DynamoDB **: Uma nova tabela do DynamoDB onde as perguntas do usuário serão armazenadas e persistidas.  Esta tabela do DynamoDB será criada com um [**DynamoDB Stream**](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) habilitado.  O stream fornecerá um stream de eventos em tempo real para todas as novas perguntas armazenadas no banco de dados, para que possam ser processadas imediatamente.
+* Um **Tópico do AWS SNS**: O AWS SNS permite que as aplicações publiquem mensagens e assinem tópicos de mensagens.  Usaremos um novo tópico como forma de enviar notificações a um endereço de e-mail inscrito para um endereço de e-mail.
+* Duas **Funções AWS Lambda**: Uma função do AWS Lambda será usada como o back-end do serviço para as requisições de API de perguntas. A outra função do AWS Lambda receberá eventos da tabela do DynamoDB de perguntas e publicará uma mensagem para cada um deles no tópico do SNS acima.  Se você visualizar as definições de recurso do CloudFormation para essas funções no arquivo `~/environment/aws-modern-application-workshop/module-6/app/cfn/customer-question.yml`, você verá uma Propriedade listada que indica `Tracing: Active`.  Isso significa que todas as invocações da função Lambda serão automaticamente rastreadas pelo **AWS X-Ray**.
+* **Funções do IAM** necessárias para cada um dos recursos e ações acima.
 
-Bring your command line terminal back to your root Cloud9 environment directory so that our subsequent commands are executed from the same place:
+Volte para o seu diretório raiz do ambiente Cloud9 no seu terminal de linha de comando para que nossos comandos subsequentes sejam executados do mesmo local:
 
 ```
 cd ~/environment/
 ```
 
-First, let's create another new **AWS CodeCommit** repository for the new microservice:
-
+Primeiro, vamos criar outro novo repositório no **AWS CodeCommit** para o novo microsserviço:
 ```
 aws codecommit create-repository --repository-name MythicalMysfitsQuestionsService-Repository
 ```
 
-Next, clone the new repository into your IDE using the `cloneUrlHttp` value taken from the response to the above `create-repository` command you just ran:
-
+Em seguida, clone o novo repositório em seu IDE usando o valor `cloneUrlHttp` obtido da resposta no comando `create-repository` acima que você acabou de executar:
 ```
 git clone REPLACE_ME_WITH_ABOVE_CLONE_URL
 ```
 
-Then move your terminal to the new repository directory:
+Depois, mova seu terminal para o novo diretório do repositório:
 ```
 cd ~/environment/MythicalMysfitsQuestionsService-Repository
 ```
 
-Now, copy the new QuestionsService application code into the repository directory, followed by the CloudFormation Template necessary to deploy the infrastructure required by the QuestionsService:
-
+Agora, copie o novo código da aplicação QuestionsService no diretório do repositório, seguido pelo template do CloudFormation necessário para implantar a infraestrutura requerida pelo QuestionsService:
 ```
 cp -r ~/environment/aws-modern-application-workshop/module-6/app/* .
 ```
@@ -59,120 +57,114 @@ cp -r ~/environment/aws-modern-application-workshop/module-6/app/* .
  cp -r ~/environment/aws-modern-application-workshop/module-6/cfn/* .
 ```
 
-For this new microservice, we have included all of the packages necessary for the AWS Lambda functions to be deployed and invoked. Before deploying it, you are required to create another S3 bucket to be used by AWS SAM as a destination for your packaged QuestionService code (remember all S3 bucket names need to be unique and have naming constraints):
-
+Para este novo microsserviço, incluímos todos os pacotes necessários para que as funções do AWS Lambda sejam implantadas e chamadas. Antes de implantá-lo, é necessário criar outro bucket S3 a ser usado pelo AWS SAM como um destino para o código empacotado do QuestionService (lembre-se de que todos os nomes de buckets do S3 precisam ser únicos e têm restrições de nomenclatura):
 ```
 aws s3 mb s3://REPLACE_ME_NEW_QUESTIONS_SERVICE_CODE_BUCKET_NAME
 ```
- and execute the following command to transform the SAM template into CloudFormation...
+e execute o seguinte comando para transformar o template do SAM no CloudFormation ...
 
 ```
 sam package --template-file ~/environment/MythicalMysfitsQuestionsService-Repository/customer-questions.yml --output-template-file ~/environment/MythicalMysfitsQuestionsService-Repository/transformed-questions.yml --s3-bucket REPLACE_ME_NEW_QUESTIONS_SERVICE_CODE_BUCKET_NAME
 ```
 
-...and then deploy the CloudFormation stack. **Note: provide an email address you have access to as the REPLACE_ME_EMAIL_ADDRESS parameter (replace it prior to pasting this command, the stack creation will fail if you execute the command without providing a valid email address). This will be the email address that user questions are published to by the SNS topic**:
-
+... e implemente a stack do CloudFormation. **Note: forneça um endereço de e-mail ao qual você tenha acesso como o parâmetro REPLACE_ME_EMAIL_ADDRESS (substitua-o antes de colar esse comando, a criação da stack falhará se você executar o comando sem fornecer um endereço de e-mail válido). Este será o endereço de e-mail do qual as perguntas de usuários serão publicadas pelo tópico do SNS **:
 ```
 aws cloudformation deploy --template-file /home/ec2-user/environment/MythicalMysfitsQuestionsService-Repository/transformed-questions.yml --stack-name MythicalMysfitsQuestionsService-Stack --capabilities CAPABILITY_IAM --parameter-overrides AdministratorEmailAddress=REPLACE_ME_YOUR_EMAIL_ADDRESS
 ```
 
-When this command completes, let's capture the output of the stack so that we can reference its values in subsequent steps (will create a file in your IDE called `questions-service-output.json`):
+Quando este comando for concluído, vamos capturar o output da stack para que possamos referenciar seus valores nas etapas subsequentes (criaremos um arquivo em seu IDE chamado `questions-service-output.json`):
 
 ```
 aws cloudformation describe-stacks --stack-name MythicalMysfitsQuestionsService-Stack > ~/environment/questions-service-output.json
 ```
 
-Next, visit the email address provided and CONFIRM your subscription to the SNS topic:
+Em seguida, visite o endereço de e-mail fornecido e CONFIRME sua inscrição no tópico do SNS:
 ![SNS Confirm](/images/module-6/confirm-sns.png)
 
 
-Now, with the new backend service running, let's make the required changes to `index.html` so that the frontend can include the new *Contact Us* button.  Open `~/environment/aws-modern-application-workshop/module-6/web/index.html`  and insert the API endpoint for the new Questions API, retrieve the output value of `REPLACE_ME_QUESTIONS_API_ENDPOINT` from the above CloudFormation stack (located at `~/environment/questions-service-output.json`).  **Remember that you'll also need to paste the same values that you previously used prior to this module for the other Mysfits microservices endpoints and user pool.**
+Agora, com o novo serviço de backend em execução, vamos fazer as alterações necessárias no `index.html`, para que o frontend possa incluir o novo botão *Fale Conosco*. Abra `~ / environment / aws-modern-application-workshop / module-6 / web / index.html` e insira o endpoint da API para a nova API de Perguntas, recupere o valor do output de` REPLACE_ME_QUESTIONS_API_ENDPOINT` da stack do CloudFormation acima (localizada em `~ / environment / questions-service-output.json`). ** Lembre-se de que você também precisará colar os mesmos valores usados ​​anteriormente a deste módulo para os outros endpoints e pool de usuários dos microsserviços do Mysfits. **
 
 
 
-Once you've made the necessary change to `index.html` run the following command to copy it to your website S3 bucket.
+Depois de fazer a alteração necessária no `index.html`, execute o seguinte comando para copiá-lo para o bucket de seu website no S3.
 
 ```
 aws s3 cp ~/environment/aws-modern-application-workshop/module-6/web/index.html s3://YOUR-S3-BUCKET/
 ```
 
-Now that the new Contact Us functionality is deployed, visit the website and submit a question or two.  If you've confirmed the subscription to SNS in the step above, you'll start to see those questions arrive in your inbox! When you've seen that email arrive, you can move on to explore and analyze the request lifecycle.
+Agora que a nova funcionalidade Fale Conosco está implantada, visite o website e submeta uma ou duas perguntas. Se você confirmou a inscrição no SNS na etapa acima, você começará a ver essas perguntas chegando na sua caixa de entrada. Quando você ver esse email chegar, você pode seguir para explorar e analisar o ciclo de vida da requisição.
 
-Now, to start seeing the request behavior for this microservice, visit the AWS X-Ray console to explore:
+Agora, para começar a ver o comportamento da requisição para este microsserviço, visite o console do AWS X-Ray para explorar:
 
 [AWS X-Ray Console](https://console.aws.amazon.com/xray/home)
 
-Upon visiting the X-Ray Console you'll be immediately viewing a **service map**, which shows the dependency relationship between all the components that X-Ray receives **trace segments** for:  
+Ao visitar o Console do X-Ray, você visualizará imediatamente um **mapa de serviços**, que mostra a relação de dependência entre todos os componentes que o X-Ray para a qual recebe **segmentos de rastreio**:
 
 ![X-Ray Lambda Only](/images/module-6/lambda-only-x-ray.png)
 
-At first, this service map only includes our AWS Lambda functions.  Feel free to explore the X-Ray console to learn more about drilling into the data automatically made visible just by listing the `Tracing: Active` property in the CloudFormation template you deployed.
+No início, este mapa de serviços inclui apenas as nossas funções do AWS Lambda. Sinta-se à vontade para explorar o console do X-Ray e aprender mais sobre como detalhar os dados que se tornaram automaticamente visíveis apenas listando a propriedade `Tracing: Active` no template do CloudFormation que você implantou.
 
-Next, we're going to instrument more of the microservice stack so that all of the service dependencies are included in the service map and recorded trace segments.
+Em seguida, vamos instrumentalizar mais a stack do microsserviço para que todas as dependências de serviço sejam incluídas no mapa de serviço e nos segmentos de rastreio gravados.
 
-First, we will instrument the API Gateway REST API.  Issue the following command inserting the value for ``REPLACE_ME_QUESTIONS_REST_API_ID`` that is located in the ``questions-service-output.json`` file created but the most recent CloudFormation `descrbe-stacks` command you just ran.  The below command will enable tracing to start at the API Gateway level of the service stack:
+Primeiro, vamos instrumentalizar a API REST do API Gateway. Emita o seguinte comando inserindo o valor para ``REPLACE_ME_QUESTIONS_REST_API_ID`` que está localizado no arquivo ``questions-service-output.json`` criado pelo comando `describe-stacks` do CloudFormation mais recente que você acabou de executar. O comando abaixo permitirá que o rastreio inicie no nível do API gateway da stack de serviços:
 
 ```
 aws apigateway update-stage --rest-api-id REPLACE_ME_QUESTIONS_REST_API_ID --stage-name prod --patch-operations op=replace,path=/tracingEnabled,value=true
 ```
 
-Now, submit another question to the Mythical Mysfits website and you'll see that the REST API is also included in the service map!
+Agora, envie outra pergunta para o website Mythical Mysfits e você verá que a API REST também está incluída no mapa de serviço!
 
 ![API Gateway Traced](/images/module-6/api-x-ray.png)
 
-Next, you will use the [AWS X-Ray SDK for Python](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-python.html) so that the services being called by the two Lambda functions as part of the questions stack are also represented in the X-Ray service map.  The code has been written already to accomplish this, you just need to uncomment the relevant lines (uncommenting is performed by deleting the preceding `#` in a line of python code).  In the Lambda function code, you will see comments that indicate `#UNCOMMENT_BEFORE_2ND_DEPLOYMENT` or `#UNCOMMENT_BEFORE_3RD_DEPLOYMENT`.  
+Depois, você usará o [SDK do AWS X-Ray para Python](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-python.html) para que os serviços que estão sendo chamados pelas duas funções do Lambda como parte da stack de perguntas também sejam representados no mapa de serviços do X-Ray. O código já foi escrito para fazer isso, você só precisa descomentar as linhas relevantes (a remoção de comentários é realizada excluindo o `#` anterior em uma linha de código python). No código da função Lambda, você verá comentários que indicam `#UNCOMMENT_BEFORE_2ND_DEPLOYMENT` ou `#UNCOMMENT_BEFORE_3RD_DEPLOYMENT`. 
 
-You've already completed the first deployment of these functions using CloudFormation, so this will be your **2nd Deployment**.  Uncomment each of the lines indicated below all cases of `UNCOMMENT_BEFORE_2ND_DEPLOYMENT` in the following files, and save the files after making the required changes:
+Você já concluiu a primeira implantação dessas funções usando o CloudFormation, então essa será sua **2ª implantação**. Descomente cada uma das linhas indicadas abaixo de todos os casos de `UNCOMMENT_BEFORE_2ND_DEPLOYMENT` nos seguintes arquivos e salve os arquivos depois de fazer as alterações necessárias:
 * `~/environment/MythicalMysfitsQuestionsStack-Repository/PostQuestionsService/mysfitsPostQuestion.py`
 * `~/environment/MythicalMysfitsQuestionsStack-Repository/ProcessQuestionsStream/mysfitsProcessStream.py`
 
-**Note: The changes you've uncommented enable the AWS X-Ray SDK to instrument the AWS Python SDK (boto3) to capture tracing data and record it within the Lambda service anytime an AWS API call is made. Those few lines of code are all that's required in order for X-Ray to automatically trace your AWS service map throughout a serverless application using AWS Lambda!**
+**Note: As alterações que você descomentou permitem que o SDK do AWS X-Ray instrumentalize o SDK de Python da AWS (boto3) para capturar dados de rastreamento e registrá-los no serviço Lambda sempre que uma chamada da API da AWS é feita. Essas poucas linhas de código são tudo o que é necessário para que o X-Ray rastreie automaticamente seu mapa de serviço da AWS em uma aplicação serverless usando o AWS Lambda!**
 
-With those changes made, deploy an update to the Lambda function code by issuing the following two commands:
+Com essas alterações feitas, implemente uma atualização no código da função Lambda emitindo os dois comandos a seguir:
 
-First, use SAM to create new Lambda function code bundles and upload the packaged code to S3:
+Primeiro, use o SAM para criar novos pacotes de código da função Lambda e faça o upload do código empacotado no S3:
 ```
 sam package --template-file ~/environment/MythicalMysfitsQuestionsService-Repository/customer-questions.yml --output-template-file ~/environment/MythicalMysfitsQuestionsService-Repository/transformed-questions.yml --s3-bucket REPLACE_ME_NEW_QUESTIONS_SERVICE_CODE_BUCKET_NAME
 ```
 
-Second, use CloudFormation to deploy the changes to the running stack:
+Depois, use o CloudFormation para implantar as alterações na stack em execução:
 
 ```
 aws cloudformation deploy --template-file /home/ec2-user/environment/MythicalMysfitsQuestionsService-Repository/transformed-questions.yml --stack-name MythicalMysfitsQuestionsService-Stack --capabilities CAPABILITY_IAM --parameter-overrides AdministratorEmailAddress=REPLACE_ME_YOUR_EMAIL_ADDRESS
 ```
 
-Once that command completes, submit an additional question to the Mythical Mysfits website and take a look at the X-Ray console again. Now you're able to trace how Lambda is interacting with DynamoDB as well as SNS!
+Depois que o comando for concluído, envie uma pergunta adicional ao website Mythical Mysfits e dê uma olhada no console do X-Ray novamente. Agora você pode rastrear como o Lambda está interagindo com o DynamoDB e com o SNS!
 
 ![Services X-Ray](/images/module-6/services-x-ray.png)
 
-The final step in this module is to familiarize yourself with using AWS X-Ray to triage problems in your application.  To accomplish this, we're going to by *mysfits* ourselves and have you add some terrible code to your application.  All this code will do is cause your web service to add 5 seconds of latency and throw an exception for randomized requests :) .
+A etapa final deste módulo é familiarizar-se com o uso do AWS X-Ray para triagem de problemas em seu aplicativo. Para conseguir isso, vamos *desajustar* as coisas nós mesmos e adicionar um código terrível à sua aplicação. Tudo o que esse código fará é fazer com que seu serviço web adicione 5 segundos de latência e lance uma exceção para requisições aleatórias :).
 
-Go back into the following file and remove the comments indicated by `#UNCOMMENT_BEFORE_3RD_DEPLOYMENT`:  
+Volte para o seguinte arquivo e remova os comentários indicados por `# UNCOMMENT_BEFORE_3RD_DEPLOYMENT`:  
 * `~/environment/MythicalMysfitsQuestionsStack-Repository/PostQuestionsService/mysfitsPostQuestion.py`
 
-This is the code that will cause your Lambda function to throw an exception.  Also, you can note above the `hangingException()` function that we're using out-of-the-box functionality of the **AWS X-Ray SDK** to record a trace subsegment each time that function is called.  Now when you drill into the Trace for a particular request, you'll be able to see that all requests are stuck sitting within this function for at least 5 seconds before they throw the exception.
+Este é o código que fará com que sua função Lambda lance uma exceção. Além disso, você pode notar acima da função `hangingException ()` que estamos usando a funcionalidade pronta para uso do **SDK do AWS X-Ray** para gravar um subsegmento de rastreio toda vez que a função for chamada.  Agora, quando você analisar o Rastreamento de uma requisição específica, poderá ver que todas as requisições estão presas nessa função por pelo menos cinco segundos antes de lançarem a exceção.
+O uso dessa funcionalidade em suas próprias aplicações ajudará você a identificar gargalos de latência semelhantes em seu código ou locais onde exceções estão sendo lançadas.
 
-Using this functionality within your own applications will help you identify similar latency bottlenecks within your code, or places where exceptions are being thrown.
+Depois de fazer as alterações necessárias no código e salvar o arquivo `mysfitsPostQuestion.py`, execute os mesmos dois comandos de antes para empacotar e implantar suas alterações no CloudFormation. ** Use a tecla de seta PARA CIMA dentro do seu terminal Cloud9 para ver os comandos anteriores e primeiro execute o comando `sam package` no seu histórico, e depois o comando` aws cloudformation deploy`, subseqüentemente.**
 
-After you make the required code changes and save the `mysfitsPostQuestion.py` file, run the same two commands as before to package and deploy your changes to CloudFormation.  **Use the UP arrow key within your Cloud9 terminal to see past commands and first execute the `sam package` command in your history, and then the `aws cloudformation deploy` command subsequently.**
+Depois de ter emitido esses dois comandos, envie mais algumas perguntas em seu Website Mysfits. Algumas dessas perguntas não serão exibidas na sua caixa de entrada, pois seu código novo e terrível gerou um erro!
 
-After you've issued those two commands, submit another few questions on your Mysfits website.  Some of these questions will fail to show up in your inbox. Because your new and terrible code has thrown an error!
-
-If you visit the X-Ray console again, you'll notice that the service map for the MysfitPostQuestionsFunction Lambda function has a ring around it that is no longer only Green. That's because Error responses have been generated there.  X-Ray will give you this visual representation of overall service health across all of the instrumented services in your service map:
-
+Se você visitar o console do X-Ray novamente, perceberá que o mapa de serviço da função Lambda MysfitPostQuestionsFunction tem um anel ao seu redor que não é mais apenas Verde. Isso porque respostas de erro foram geradas lá. O X-Ray fornecerá a você uma representação visual da integridade geral do serviço em todos os serviços instrumentados em seu mapa de serviço:
 ![X-Ray Errors](/images/module-6/x-ray-errors.png)
 
-If you click on that service within the service map, you'll notice on the right side of the X-Ray console, you have the ability to view the traces that either match the highlighted overall latency shown within the service latency graph and/or the status code you're interested in.  Zoom the latency graph so that the blip around 5 seconds is within the graph and/or select the Error check box and click **View traces**:
-
+Se você clicar nesse serviço no mapa de serviço, perceberá que no lado direito do console do X-Ray você pode visualizar os rastreamentos que correspondem à latência geral em destaque mostrada no gráfico de latência do serviço e/ou ao código de status em que você está interessado.  Aumente o zoom do gráfico de latência para que o sinal em torno de 5 segundos esteja dentro do gráfico e / ou selecione a caixa de seleção de Erro e clique em **View traces**:
 ![View Traces](/images/module-6/view-traces.png)
 
-This will take you to the Trace dashboard where you can explore that specific requests lifecycle, see the latency spend on each segment of the service, and view the exception reported and associated stack trace. Click on any of the IDs for the Traces where the response is reported as a 502, then on the subsequent **Trace Details** page, click on the **hangingException** to view that specific subsegment where the exception was thrown in our code:
-
+Isso levará você ao painel de Rastreamento, onde você poderá explorar o ciclo de vida de solicitações específicas, ver o gasto de latência em cada segmento do serviço e visualizar a exceção reportada e o rastreamento da stack associada. Clique em qualquer um dos IDs de Rastreamentos em que a resposta é reportada como 502, depois na página subseqüente **Detalhes do Rastreamento**, clique em **hangingException** para visualizar esse subsegmento específico onde a exceção foi lançada em nosso código:
 ![Exception](/images/module-6/exception.png)
 
-Congratulations, you've completed module 6!
+Parabéns, você completou o módulo 6!
 
-### [Proceed to Module 7](/module-7)
+### [Prossiga para o Módulo 7](/module-7)
 
 
 #### [AWS Developer Center](https://developer.aws)
