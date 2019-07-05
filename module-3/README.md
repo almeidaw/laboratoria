@@ -103,9 +103,9 @@ aws s3 cp --recursive ~/environment/aws-modern-application-workshop/module-3/web
 
 Visite novamente seu site Mythical Mysfits para ver a nova população de Mysfits sendo carregada da sua tabela do DynamoDB e como a funcionalidade de Filtro está funcionando.
 
-Isso concluí o Módulo 3.
+Isso conclui o Módulo 3.
 
 [Prossiga para o Módulo 4](/module-4)
 
 
-## [AWS Developer Center](https://developer.aws)
+## [Centro do desenvolvedor da AWS](https://developer.aws)

@@ -136,7 +136,7 @@ git push
 Enquanto essas atualizações no serviço estão sendo automaticamente depositadas no seu Pipeline de Ci/CD, continue para o próximo passo.
 
 
-#### Update the Mythical Mysfits Website in S3
+#### Atualize o site da Mythical Mysfits no S3
 
 Abra a nova versão do index.html do Mythical Mysfits que nós colocaremos no S3 em breve, ela está localizada em: `~/environment/aws-modern-application-workshop/module-4/app/web/index.html`.
 Nesse novo index.html, você irá perceber códigos HTML e JavaScript adicionais que estão sendo usados para adicionar as funcionalidades de registro e login de usuários. Esse código está interagindo com o SDK do JavaScript do AWS Cognito para ajudar a gerenciar o registro, autenticação, e autorização para todas as chamadas API que precisam disso. 
@@ -155,9 +155,9 @@ aws s3 cp --recursive ~/environment/aws-modern-application-workshop/module-4/web
 
 Recarregue o site do Mythical Mysfits no seu browser para ver as novas funcionalidades em ação!
 
-Isso concluí o Módulo 4.
+Isso conclui o Módulo 4.
 
 [Prossiga para o Módulo 5](/module-5)
 
 
-## [AWS Developer Center](https://developer.aws)
+## [Centro do desenvolvedor da AWS](https://developer.aws)

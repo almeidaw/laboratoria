@@ -22,7 +22,7 @@
 
 No modulo 2, você vai hospedar um micro serviço novo usando [AWS Fargate](https://aws.amazon.com/fargate/) no [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) para que o seu site “Mythical Mysthical” possa ter um back-end integrado. O AWS Fargate é uma opção para a implementação no Amazon ECS, que permite implantar containers sem precisar gerenciar clusters ou servidores. Para o back-end do site, usaremos python e criaremos um aplicativo flask em um container docker, este ficará atrás de um Network load balancer (balanceador de carga por rede). Estes iram formar o micro serviço de back-end que irá se integrar com o seu site.
 
-### CRIANDO A INFRAESTRUTURA CENTRAL COM O AWS CLOUDFORMATION
+### Criando a infraestrutura central com o AWS CloudFormation
 
 Antes de criar nosso serviço, precisamos criar um ambiente de infraestrutura que sustentará o serviço, incluindo a infraestrutura de rede via [Amazon VPC](https://aws.amazon.com/vpc/), and the [AWS Identity and Access Management](https://aws.amazon.com/iam/) VPC e as funções de gerenciamento de acesso e identidade [(IAM)]( https://aws.amazon.com/iam/) da AWS que definirão as permissões que o ECS e o nossos containers terão acesso. Usaremos o [AWS CloudFormation](https://aws.amazon.com/cloudformation/) para isso, este é um serviço da AWS que permite que os clientes gerem infraestrutura como código, em dois formatos de arquivo suportados, JSON ou YAML. Esses recursos estão disponíveis em /module-2/cfn/core.yml. Este template irá criar os seguintes recursos:
 
@@ -55,7 +55,7 @@ Quando você receber essa resposta, significa que o CloudFormation terminou a cr
 aws cloudformation describe-stacks --stack-name MythicalMysfitsCoreStack > ~/environment/cloudformation-core-output.json
 ```
 
-## MODULO 2a: LANÇANDO UM SERVIÇO COM O AWS FARGATE
+## Módulo 2a: Lançando um serviço com o AWs Fargate
 
 ### Criando um serviço de container flask:
 
@@ -114,7 +114,7 @@ Se você ver uma uma resposta do serviço que retornou um documento JSON armazen
 
 Quando o teste terminar, você pode terminar o serviço pressionando control + c no PC ou MacOS. 
 
-#### MANDE A IMAGEM DOCKER PARA O AMAZON ECS
+#### Mande a imagem Docker para o Amazon ECS
 
 Com o teste “local” tendo sido de sucesso, vamos subir a imagem do Docker em um repositório no [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/) (Amazon ECR) Ao invés de criar um registro, rode o seguinte comando, este vai criar um repositório no registro padrão do ECS na sua conta.
 
@@ -140,9 +140,9 @@ Execute o seguinte comando para ver as imagens armazenadas no repositório do EC
 aws ecr describe-images --repository-name mythicalmysfits/service
 ```
 
-### CONFIGURANDO OS SERVIÇOS QUE SÃO PRÉ-REQUISITOS NO AMAZON ECS
+### Configurando os serviços que são pré-requisitos no Amazon ECS
 
-#### CRIE UM CLUSTER NO AMAZON ECS 
+#### Crie um cluster no Amazon ECS
 
 Agora, nós já temos a imagem disponível no amazon ECR para que nós possamos lançar via ECS usando o AWS Fargate. O mesmo serviço que você testou localmente com o Cloud9 via terminal, agora lançaremos ele na nuvem e deixaremos ele disponível com um Network Load Balancer (balanceador de carga por rede).
 
@@ -154,7 +154,7 @@ Para criar um novo cluster ECS, execute o seguinte comando:
 aws ecs create-cluster --cluster-name MythicalMysfits-Cluster
 ```
 
-#### CRIE UM GRUPO DE LOGS NO AWS CLOUDWATCH
+#### Crie um grupo de logs no AWS CloudWatch
 
 Proximo, nós iremos criar um grupo para logs no **AWS CloudWatch Logs**. AWS CloudWatch Logs é um serviço para armazenamento de logs e analise dos mesmos. Todos os logs que forem gerados pelos seus containers serão enviados automaticamente para o CloudWatch logs como parte desse grupo especifico. Por isso é importante usar o Fargat, já que você não vai ter acesso aos servidores que estão sustentando o seu serviço.
 
@@ -164,7 +164,7 @@ Para criar o grupo de logs no CloudWatch, execute o seguinte comando:
 aws logs create-log-group --log-group-name mythicalmysfits-logs
 ```
 
-#### REGISTRE UMA DEFINIÇÃO DE TAREFA NO ECS
+#### Registre uma definição de tarefa no ECS
 
 Agora que nós temos um cluster registrado e um grupo de logs definido para onde os logs dos nossos containers irão, nós estamos prontos para criar uma **definição de tarefa (task definition)**. Uma definição de tarefa organiza um conjunto de containers que serão provisionados de uma única vez, e quais as configurações que são necessárias para elas. Você vai usar o AWS CLI para criar a definição de tarefas.
 
@@ -182,7 +182,7 @@ Uma vez que você substituiu os valores no `task-definition.json`, salve o arqui
 aws ecs register-task-definition --cli-input-json file://~/environment/aws-modern-application-workshop/module-2/aws-cli/task-definition.json
 ```
 
-### ATIVE O LOAD BALANCER FARGATE SERVICE
+### Ative o Load Balancver Fargate Service
 
 #### Crie um network load balancer 
 
@@ -196,7 +196,7 @@ aws elbv2 create-load-balancer --name mysfits-nlb --scheme internet-facing --typ
 
 Depois que esse Código for executado com sucesso, um novo arquivo vai ser criado na sua IDE chamado `nlb-output.json`. Você vai usar o `DNSName`, `VPCId` e `LoadBalancerArn` em passos no futuro
 
-#### CRIE UM LOAD BALANCER TARGET GROUP
+#### Crie um Load Balancer Target Group
 
 O próximo passo use o CLI para cria um target group (grupo de alvos) no NLB (network load balancer). Um target group permite que os recursos da AWS se auto registrem como alvos, para que possam receber requestes do load balancer, O comando inclui um valor que vai precisar ser substituido, seu `VPC-Id`que pode ser encontrado no output do CloudFormation que foi executado anteriormente.
 
@@ -205,7 +205,7 @@ aws elbv2 create-target-group --name MythicalMysfits-TargetGroup --port 8080 --p
 ```
 Este comando estiver completo, o seu output vai ser salvo em `target-group-output.json`. Você vai referenciar o `TargetGroupArn`como passo subsequente.
 
-#### CRIE UM LOAD BALANCER LISTENER
+#### Crie um Load Balancer Listener
 
 Próximo passo, use o CLI para criar um **Load Balancer Listener** (ouvinte do balanceador de carga). Isso faz com que o load balancer saiba quais são as portas especificas das requisições. Lembre-se de substituir os valores indicados pelos valores que você salvou anteriormente:
 
@@ -213,7 +213,7 @@ Próximo passo, use o CLI para criar um **Load Balancer Listener** (ouvinte do b
 aws elbv2 create-listener --default-actions TargetGroupArn=REPLACE_ME_NLB_TARGET_GROUP_ARN,Type=forward --load-balancer-arn REPLACE_ME_NLB_ARN --port 80 --protocol TCP
 ```
 
-### CRIANDO UM SERVIÇO COM O FARGATE
+### Criando um serviço com o Fargate
 
 #### Criando um serviço com as regras certas para o ECS
 
@@ -253,7 +253,7 @@ A resposta a requisição deve ser o mesmo JSON de quando você testou localment
 
 ### Atualize Mytrical Mysfits para chamar o NLB
 
-#### SUBSTITUA O ENDPOINT DA API
+#### Substitua o endpoint da API
 Próximo passo, nós precisamos integrar nosso website com a API do backend ao invés de utilizarmos o que está escrito diretamente no código que nós armazenamos no S3. Você precisa atualizar o seguinte arquivo para que este use a mesma URL NLB para as chamadas APIs (não inclua o /mysfits no caminho):  `/module-2/web/index.html`
 
 Abra o arquivo no Cloud9 e substitua o que está em destaque na imagem abaixo para a URL do NLB:
@@ -264,7 +264,7 @@ Após a substituição, deve ficar parecido com isso:
 
 ![after replace](/images/module-2/after-replace.png)
 
-#### ATUALIZE O S3
+#### Atualize o S3
 Para atualizar o arquivo no S3, utilize o nome do bucket que utilizamos no modulo 1, e execute o seguinte comando:
 
 ```
@@ -274,14 +274,14 @@ aws s3 cp ~/environment/aws-modern-application-workshop/module-2/web/index.html 
 Abra o seu website usando a mesma URL que foi utilizada no final do modulo 1, você deve ser capaz de ver o novo site Mythical Mysfits, onde esse está retornando as informações JSON que estão retornando os dados da sua API flask, que está rodando em um container lançado pelo AWS Fargate
 
 
-## MODULO 2B: AUTOMATIZANDO USANDO O SERVIÇOS DE CÓDIGO DA AWS
+## Módulo 2b: Automatizando os deploys usando os serviços de código da AWS
 
 ![Architecture](/images/module-2/architecture-module-2b.png)
 
 
 ### Criando o pipeline de CI/CD
 
-#### CRIANDO UM S3 BUCKET PARA ARMAZENAR O PIPELINE DE PROGRAMAÇÃO
+#### Criando um bucker S3 para armazenar o pipeline de programação
 
 Agora que você possui o serviço criado e rodando na nuvem, você possivelmente pode pensar em alterações no código que gostaria de fazer no serviço Flask. Seria um engasgo de produtividade muito grande, toda vez que você quisesse fazer uma alteração no código, ser obrigado a realizar todos os passos que já fizemos previamente. Aqui entra o nosso Continuous Integration e Continuous Deployment ou CI/CD!
 
@@ -301,7 +301,7 @@ Uma vez que o arquivo JSON foi modificado, salve-o. Em seguida execute o comando
 aws s3api put-bucket-policy --bucket REPLACE_ME_ARTIFACTS_BUCKET_NAME --policy file://~/environment/aws-modern-application-workshop/module-2/aws-cli/artifacts-bucket-policy.json
 ```
 
-#### CRIE UM REPOSITÓRIO NO CODECOMMIT
+#### Crie um repositório no CodeCommit
 
 Nós precisaremos de um lugar para enviar e armazenar os códigos. Crie um repositório no [**AWS CodeCommit Repository**](https://aws.amazon.com/codecommit/) usado o CLI para isso:
 
@@ -309,7 +309,7 @@ Nós precisaremos de um lugar para enviar e armazenar os códigos. Crie um repos
 aws codecommit create-repository --repository-name MythicalMysfitsService-Repository
 ```
 
-#### CRIE UM PROJETO NO CODEBUILD
+#### Crie um projeto no Codebuild
 
 Com o repositório criado para armazenar os nossos códigos. Precisamos de algo que pegue os novos códigos e leve aos serviços aos quais estes pertençam. Por isso vamos criar um [**AWS CodeBuild Project**](https://aws.amazon.com/codebuild/). A qualquer momento que o trigger for ativado, ele provisionará toda a infraestrutura necessária para que o serviço possa estar em funcionamento. Todos os passo para a criação e provisionamento do Docker está no documento: `~/environment/aws-modern-application-workshop/module-2/app/buildspec.yml`. O **buildspec.yml** é o arquivo que possui todo o passo a passo para que o CodeBuild saiba como provisionar a arquitetura e a nova imagem Docker com os códigos atualizados.
 
@@ -319,7 +319,7 @@ Para criar um projeto no CodeBuild, outro arquivo de input é necessário ser at
 aws codebuild create-project --cli-input-json file://~/environment/aws-modern-application-workshop/module-2/aws-cli/code-build-project.json
 ```
 
-#### Create a CodePipeline Pipeline
+#### Cria um pipeline do CodePipeline
 
 Finalmente, nós precisamos de um jeito de criar a integração continua (continuously integration) do nosso repositório do CodeCommit com o projeto no CodeBuild, este precisa construir a aplicação no ECS. O [**AWS CodePipeline**](https://aws.amazon.com/codepipeline/) é o serviço que faz a junção das coisas criando um **pipeline** que manterá sua aplicação sempre atualizada.
 
@@ -333,7 +333,7 @@ Uma vez salvo, crie o pipeline com o seguinte comando:
 aws codepipeline create-pipeline --cli-input-json file://~/environment/aws-modern-application-workshop/module-2/aws-cli/code-pipeline.json
 ```
 
-#### ATIVE O ACESSO AUTOMATIZADO AO REPOSITÓRIO COM IMAGEM PARA O ECR
+#### Ative o acesso automatizado ao repositório com imagem para o ECS
 
 Nós temos uma ultima parada antes do nosso CI/CD pipeline possa executar automaticamente as atualizações nas nossas aplicações. Com o CI/CD pipeline no lugar, você não vai mais precisar fazer o envio manual das atualizações nos códigos. Nós precisamos colocar a politica n o serviço para que faça as funções desejadas por nós. Esta politica está localizada em: `~/environment/aws-modern-application-workshop/module-2/aws-cli/ecr-policy.json`. Atualize com as informações dos seus serviços, salve as alterações e execute o comando abaixo:
 
@@ -343,7 +343,7 @@ aws ecr set-repository-policy --repository-name mythicalmysfits/service --policy
 
 Quando você receber uma mensagem dizendo que os comandos foram executados com sucesso, significa que seu pipeline foi criado com sucesso.
 
-### TESTE O CI/CD PIPELINE
+### Teste o Pipeline CI/CD
 
 #### Usando o Git com AWS CodeCommit
 Para testar seu novo pipeline, nós precisamos configurar o git no seu Cloud9 e integrar com o repositório CodeCommit 
@@ -384,7 +384,7 @@ O comando irá dizer que o nosso repositório está vazio, vamos corrigir, manda
 cp -r ~/environment/aws-modern-application-workshop/module-2/app/* ~/environment/MythicalMysfitsService-Repository/
 ```
 
-#### ENVIANDO UMA ALTERAÇÃO DE CÓDIGO
+#### Enviando uma alteração de código
 
 Agora temos o nosso pipeline funcionando, junto com o nosso serviço que foi lançado via Fargate, os arquivos da aplicação estão armazenado no Cloud9. Para mostrarmos que o pipeline está funcionando, vamos abrir o arquivo: `~/environment/MythicalMysfitsService-Repository/service/mysfits-response.json` E altere a idade de um dos mysfits para outro valor, e salve o arquivo.
 
@@ -407,9 +407,9 @@ Após a publicação, abra o codePipeline e veja o seu pipeline criado em funcia
 Você pode ver o progresso da ação no console do CodePipeline (Não precisa de nenhuma ação, só aprecie a automação!):
 [AWS CodePipeline](https://console.aws.amazon.com/codepipeline/home)
 
-Parabéns! Concluimos o modulo 2!
+Isso conclui o Módulo 2.
 
-[Vamos para o modulo 3!](/module-3)
+[Prossiga para o Módulo 3](/module-3)
 
 
-## [AWS Developer Center](https://developer.aws)
+## [Centro do desenvolvedor da AWS](https://developer.aws)

@@ -2,7 +2,7 @@
 
 ![Architecture](/images/module-6/x-ray-arch-diagram.png)
 
-**Tempo para ser Completado:** 45 minutos
+**Tempo esperado:** 45 minutos
 
 **Serviços usados:**
 * [AWS CloudFormation](https://aws.amazon.com/cloudformation/)
@@ -170,4 +170,4 @@ Parabéns, você completou o módulo 6!
 ### [Prossiga para o Módulo 7](/module-7)
 
 
-#### [AWS Developer Center](https://developer.aws)
+#### [Centro do desenvolvedor da AWS](https://developer.aws)

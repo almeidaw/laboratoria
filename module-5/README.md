@@ -24,7 +24,7 @@ A estrutura serverless de processamento em tempo real que você irá criar inclu
 
 * Um [**AWS Kinesis Data Firehose delivery stream**](https://aws.amazon.com/kinesis/data-firehose/): Kinesis Firehose é um serviço altamente disponível e gerenciado para streaming em tempo real que aceita registros de dados e os recebe automaticamente dentro de diversos possíveis destinos de armazenamento na AWS, como por exemplo Amazon S3, ou o Amazon Redshift. Kinesis Firehose também permite que todos os registros recebidos por uma stream sejam automaticamente entregues a funções criadas com **AWS Lambda**. Isso significa que códigos que você escreveu podem performar qualquer processamento adicional ou transformações dos registros antes deles serem agregados e armazenados no destino configurado.
 
-* Um [**Amazon S3 bucket**](https://aws.amazon.com/s3/): Um novo bucket será criado no S3 onde todos os registros dos eventos de cliques serão agregados em arquivos e armazenados como objetos.
+* Um [**Amazon buicket S3**](https://aws.amazon.com/s3/): Um novo bucket será criado no S3 onde todos os registros dos eventos de cliques serão agregados em arquivos e armazenados como objetos.
 
 * Uma [**AWS Lambda function**](https://aws.amazon.com/lambda/): AWS Lambda permite desenvolvedores a escrever códigos que apenas contêm o que sua lógica requer. Aqui, uma função Serverless é definida usando AWS SAM. Esse código será colocado no AWS Lambda, escrita em Python, e processará os registros de cliques que são recebidos pela delivery stream. A função recupera atributos adicionais sobre os cliques nos Mysfits para tornar os registros com mais informações relevantes. Mas, para o propósito desse workshop, o código tem o intúito de demonstrar as possibilidades arquiteturais de incluir uma função serverless para performar qualquer processamento adicional nos dados. Uma vez que a função Lambda é criada e o Kinesis Firehose delivery stream é configurada como uma fonte de eventos para a função, o delivery stream vai automaticamente entregar os registros dos cliques como eventos para a função que nós criamos. Essa função vai entregar os registros atualizados para o Bucket S3 configurado.
 
@@ -182,4 +182,4 @@ Isso concluí o Módulo 5.
 ### [Prossiga para o Módulo 6](/module-6)
 
 
-#### [AWS Developer Center](https://developer.aws)
+#### [Centro do desenvolvedor da AWS](https://developer.aws)

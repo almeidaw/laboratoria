@@ -2,7 +2,7 @@
 
 ![Architecture](/images/module-7/sagemaker-architecture.png)
 
-**Tempo para ser completado:** 45 minutes
+**Tempo esperado:** 45 minutes
 
 **Serviços usados:**
 * [Amazon SageMaker](https://aws.amazon.com/sagemaker/)
@@ -170,12 +170,12 @@ Agora você poderá ver um novo botão **Recomende um Mysfit** no website, que a
 Parabéns, você completou o módulo 7!
 
 
-### Clean-Up do Workshop
+### Limpeza do Workshop
 
-#### Clean-Up do Módulo 7:
+#### Limpeza do Módulo 7:
 Adicionamos código ao SageMaker notebook para excluir o endpoint implantado. Se você retornar ao notebook e prosseguir para as próximas células de código, poderá executá-las para desativar o endpoint a fim de parar de pagar por ele.
 
-#### Clean-Up Geral do Workshop:
+#### Limpeza Geral do Workshop:
 Certifique-se de excluir todos os recursos criados durante o workshop para garantir que o faturamento dos recursos não continue por mais tempo do que você pretende. Recomendamos que você utilize o Console da AWS para explorar os recursos criados e excluí-los quando você estiver pronto.
 
 Nos dois casos em que você provisionou recursos usando o AWS CloudFormation, é possível remover esses recursos simplesmente executando o seguinte comando do CLI para cada stack:
@@ -212,4 +212,4 @@ Esperamos que você tenha aproveitado o Workshop de Aplicações Modernas da AWS
 Obrigado!
 
 
-## [AWS Developer Center](https://developer.aws)
+## [Centro do desenvolvedor da AWS](https://developer.aws)
