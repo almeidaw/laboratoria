@@ -1,10 +1,10 @@
-# Module 5: Capturing User Behavior
+# Módulo 5 - Capturando o Comportamento do Usuário
 
 ![Architecture](/images/module-5/architecture-module-5.png)
 
-**Time to complete:** 30 minutes
+**Tempo esperado:** 30 minutos
 
-**Services used:**
+**Serviços usados:**
 * [AWS CloudFormation](https://aws.amazon.com/cloudformation/)
 * [AWS Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/)
 * [Amazon S3](https://aws.amazon.com/s3/)
@@ -14,35 +14,41 @@
 * [AWS Serverless Appliation Model (AWS SAM)](https://github.com/awslabs/serverless-application-model)
 * [AWS SAM Command Line Interface (SAM CLI)](https://github.com/awslabs/aws-sam-cli)
 
-### Overview
-Now that your Mythical Mysfits site is up and running, let's create a way to better understand how users are interacting with the website and its Mysfits.  It would be very easy for us to analyze user actions taken on the website that lead to data changes in our backend - when mysfits are adopted or liked.  But understanding the actions your users are taking on the website *before* a decision to like or adopt a mysfit could help you design a better user experience in the future that leads to mysfits getting adopted even faster.  To help us gather these insights, we will implement the ability for the website frontend to submit a tiny request, each time a mysfit profile is clicked by a user, to a new microservice API we'll create. Those records will be processed in real-time by a serverless code function, aggregated, and stored for any future analysis that you may want to perform.
+### Resumo
 
-Modern application design principles prefer focused, decoupled, and modular services.  So rather than add additional methods and capabilities within the existing Mysfits service that you have been working with so far, we will create a new and decoupled service for the purpose of receiving user click events from the Mysfits website.  This full stack has been represented using a provided CloudFormation template.
+Agora que seu site Mythical Mysfits está rodando, vamos criar uma maneira de entender melhor como usuários estão interagindo com o site e seus Mysfits. Seria bem fácil para nós analizar ações que usuários tomaram no site que impactaram em mudanças de dados no backend - quando um mysfit é adotado ou recebe um like. Mas entender as ações que os usuários estão tomando no site *antes* que a decisões de dar um like ou adotar um mysfit pode ajudar a desenhar uma melhor experiência futura que pode impactar em mais mysfits sendo adotados. Para nos ajudar a reunir esses insights, nós implementaremos a habilididade para o frontend do site de submeter um tiny request, toda vez que um perfil de um mysfit é clicado por um usuário, para um novo API de microsserviço que criaremos. Esses registros serão processados em tempo real por uma função serverless, agregados e armazenados para qualquer análise futura que você queira fazer.
 
-The serverless real-time processing service stack you are creating includes the following AWS resources:
-* An [**AWS Kinesis Data Firehose delivery stream**](https://aws.amazon.com/kinesis/data-firehose/): Kinesis Firehose is a highly available and managed real-time streaming service that accepts data records and automatically ingests them into several possible storage destinations within AWS, examples including an Amazon S3 bucket, or an Amazon Redshift data warehouse cluster. Kinesis Firehose also enables all of the records received by the stream to be automatically delivered to a serverless function created with **AWS Lambda** This means that code you've written can perform any additional processing or transformations of the records before they are aggregated and stored in the configured destination.
-* An [**Amazon S3 bucket**](https://aws.amazon.com/s3/): A new bucket will be created in S3 where all of the processed click event records are aggregated into files and stored as objects.
-* An [**AWS Lambda function**](https://aws.amazon.com/lambda/): AWS Lambda enables developers to write code functions that only contain what their logic requires and have their code be deployed, invoked, made highly reliable, and scale without having to manage infrastructure whatsoever. Here, a Serverless code function is defined using AWS SAM. It will be deployed to AWS Lambda, written in Python, and then process and enrich the click records that are received by the delivery stream.  The code we've written is very simple and the enriching it does could have been accomplished on the website frontend without any subsequent processing  at all.  The function retrieves additional attributes about the clicked on Mysfit to make the click record more meaningful (data that was already retrieved by the website frontend).  But, for the purpose of this workshop, the code is meant to demonstrate the architectural possibilities of including a serverless code function to perform any additional processing or transformation required, in real-time, before records are stored.  Once the Lambda function is created and the Kinesis Firehose delivery stream is configured as an event source for the function, the delivery stream will automatically deliver click records as events to code function we've created, receive the responses that our code returns, and deliver the updated records to the configured Amazon S3 bucket.
-* An [**Amazon API Gateway REST API**](https://aws.amazon.com/api-gateway/): AWS Kinesis Firehose provides a service API just like other AWS services, and in this case we are using its PutRecord operation to put user click event records into the delivery stream. But, we don't want our website frontend to have to directly integrate with the Kinesis Firehose PutRecord API.  Doing so would require us to manage AWS credentials within our frontend code to authorize those API requests to the PutRecord API, and it would expose to users the direct AWS API that is being depended on (which may encourage malicious site visitors to attempt to add records to the delivery stream that are malformed, or harmful to our goal of understanding real user behavior).  So instead, we will use Amazon API Gateway to create an **AWS Service Proxy** to the PutRecord API of Kinesis Firehose.  This allows us to craft our own public RESTful endpoint that does not require AWS credential management on the frontend for requests. Also, we will use a request **mapping template** in API Gateway as well, which will let us define our own request payload structure that will restrict requests to our expected structure and then transform those well-formed requests into the structure that the Kinesis Firehose PutRecord API requires.
-* [**IAM Roles**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html): Kinesis Firehose requires a service role that allows it to deliver received records as events to the created Lambda function as well as the processed records to the destination S3 bucket. The Amazon API Gateway API also requires a new role that permits the API to invoke the PutRecord API within Kinesis Firehose for each received API request.
+Padrões de Design de aplicações modernas preferem serviços focados, desacoplados e modulares. Então em vez de criar métodos adicionais no já existente serviço que temos funcionando, nós vamos criar um novo e desacoplado serviço com o propósito de receber eventos de cliques de usuários provenientes do site. A estrutura completa descrita está representada por um template do CloudFormation.
 
-Before we launch the CloudFormaiton template described above, we need to update and modify the Lambda function code it will deploy.
+A estrutura serverless de processamento em tempo real que você irá criar incluí os seguintes serviços AWS:
 
-### Copy the Streaming Service Code
+* Um [**AWS Kinesis Data Firehose delivery stream**](https://aws.amazon.com/kinesis/data-firehose/): Kinesis Firehose é um serviço altamente disponível e gerenciado para streaming em tempo real que aceita registros de dados e os recebe automaticamente dentro de diversos possíveis destinos de armazenamento na AWS, como por exemplo Amazon S3, ou o Amazon Redshift. Kinesis Firehose também permite que todos os registros recebidos por uma stream sejam automaticamente entregues a funções criadas com **AWS Lambda**. Isso significa que códigos que você escreveu podem performar qualquer processamento adicional ou transformações dos registros antes deles serem agregados e armazenados no destino configurado.
 
-#### Create a new CodeCommit Repository
+* Um [**Amazon S3 bucket**](https://aws.amazon.com/s3/): Um novo bucket será criado no S3 onde todos os registros dos eventos de cliques serão agregados em arquivos e armazenados como objetos.
 
-This new stack you will deploy using CloudFormation will not only contain the infrastructure environment resources, but the application code itself that AWS Lambda will execute to process streaming events.  To bundle the creation of our infrastructure and code together in one deployment, we are going to use another AWS tool that comes pre-installed in the AWS Cloud9 IDE -  **AWS SAM CLI**.  Code for AWS Lambda functions is delivered to the service by uploading the function code in a .zip package to an Amazon S3 bucket.  The SAM CLI automates that process for us.  Using it, we can create a CloudFormation template that references locally in the filesystem where all of the code for our Lambda function is stored.  Then, the SAM CLI will package it into a .zip file, upload it to a configured Amazon S3 bucket, and create a new CloudFormation template that indicates the location in S3 where the created .zip package has been uploaded for deployment to AWS Lambda.  We can then deploy that SAM CLI-generated CloudFormation template to AWS and watch the environment be created along with the Lambda function that uses the SAM CLI-uploaded code package.  
+* Uma [**AWS Lambda function**](https://aws.amazon.com/lambda/): AWS Lambda permite desenvolvedores a escrever códigos que apenas contêm o que sua lógica requer. Aqui, uma função Serverless é definida usando AWS SAM. Esse código será colocado no AWS Lambda, escrita em Python, e processará os registros de cliques que são recebidos pela delivery stream. A função recupera atributos adicionais sobre os cliques nos Mysfits para tornar os registros com mais informações relevantes. Mas, para o propósito desse workshop, o código tem o intúito de demonstrar as possibilidades arquiteturais de incluir uma função serverless para performar qualquer processamento adicional nos dados. Uma vez que a função Lambda é criada e o Kinesis Firehose delivery stream é configurada como uma fonte de eventos para a função, o delivery stream vai automaticamente entregar os registros dos cliques como eventos para a função que nós criamos. Essa função vai entregar os registros atualizados para o Bucket S3 configurado.
 
-First, let's create a new CodeCommit repository where the streaming service code will live:
+* Um [**Amazon API Gateway REST API**](https://aws.amazon.com/api-gateway/): AWS Kinesis Firehose provê um serviço de API assim como outros serviços AWS, e nesse caso nós estamos usando operações PutRecord para colocar os registros de eventos dos usuários no delivery stream.
+
+* [**IAM Roles**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html): Kinesis Firehose requer uma role que o permita entregar os registros recebidos como eventos para a função Lambda criada assim como os registros processados para o S3 bucket de destino. A API do Amazon API Gateway também requer uma nova role que permite a API a invocar a API PutRecord do Kinesis Firehose para cada requisição recebida.
+
+Antes de lançarmos o template do CloudFormation descrito anteriormente, nós precisamos atualizar e modificar o código da função Lambda.
+
+### Copiar o Código do Serviço de Streaming
+
+#### Criar um novo Repositório no CodeCommit
+
+Esse novo stack que você lançará usando o CloudFormation irá não só conter os recursos do ambiente da infraestrutura, mas também o código da aplicação em si. O código da função do AWS Lambda é entregue para o serviço ao fazer o upload do pacote .zip para o Amazon S3 bucket. O SAM CLI automatiza esse processo para você. Usando isso, nós podemos criar um template do CloudFormation que referencia localmente no sistema de arquivos em que todos os códigos para nosso Lambda estão armazenados. Então, o SAM CLI vai empacotar isso dentro de um arquivo .zip, fazer o upload disso para um Amazon S3 bucket configurado. Nós podemos então fazer o deploy desse template CloudFormation gerado pelo SAM CLI para a AWS e ver o ambiente ser criado. 
+
+Primeiro, vamos criar um novo repositório CodeCommit onde o código do serviço de streaming irá permanecer:
 ```
 aws codecommit create-repository --repository-name MythicalMysfitsStreamingService-Repository
 ```
 
-In the response to that command, copy the value for `"cloneUrlHttp"`.  It should be of the form:
+Em resposta a esse comando, copie o valor de `"cloneUrlHttp"`. Isso deve ter a seguinte forma:
 `https://git-codecommit.REPLACE_ME_REGION.amazonaws.com/v1/repos/MythicalMysfitsStreamingService-Repository`
 
-Next, let's clone that new and empty repository into our IDE:
+Depois, vamos clonar esse novo e vazio repositório em nossa IDE:
 ```
 cd ~/environment/
 ```
@@ -51,50 +57,51 @@ cd ~/environment/
 git clone REPLACE_ME_WITH_ABOVE_CLONE_URL
 ```
 
-#### Copy the Streaming Service Code Base
+#### Copiar a Base de Códigos do Serviço de Streaming
 
-Now, let's move our working directory into this new repository:
+Agora, vamos mover o nosso diretório de trabalho para esse novo repositório:
 ```
 cd ~/environment/MythicalMysfitsStreamingService-Repository/
 ```
 
-Then, copy the module-5 application components into this new repository directory:
+Então, copie a aplicação do módulo 5 para esse novo repositório:
 ```
 cp -r ~/environment/aws-modern-application-workshop/module-5/app/streaming/* .
 ```
 
-And let's copy the CloudFormation template for this module as well.
-
+E vamos copiar o template do CloudFormation para esse módulo também:
 ```
 cp ~/environment/aws-modern-application-workshop/module-5/cfn/* .
 ```
 
-### Update the Lambda Function Package and Code
+### Atualizar o Código e o Pacote da Função Lambda
 
-#### Use pip to Intall Lambda Function Dependencies
-Now, we have the repository directory set with all of the provided artifacts:
-* A CFN template for creating the full stack.
-* A Python file that contains the code for our Lambda function: `streamProcessor.py`
+#### Use o pip para Instalar as Dependencias da Função Lambda
 
-This is a common approach that AWS customers take - to store their CloudFormation templates alongside their application code in a repository. That way, you have a single place where all changes to application and it's environment can be tracked together.
+Agora, nós temos o repositório com todos os artefatos providos:
+* Um template CFN para a criação do stack todo.
+* Um arquivo Python que contêm o código para nossa função Lambda: `streamProcessor.py`
 
-But, if you look at the code inside the `streamProcessor.py` file, you'll notice that it's using the `requests` Python package to make an API requset to the Mythical Mysfits service you created previously.  External libraries are not automatically included in the AWS Lambda runtime environment, because different AWS customers may depend on different versions of various libraries, etc.  You will need to package all of your library dependencies together with your Lambda code function prior to it being uploaded to the Lambda service.  We will use the Python package manager `pip` to accomplish this.  In the Cloud9 terminal, run the following command to install the `requests` package and it's dependencies locally alongside your function code:
+Essa é uma abordagem comum que clientes da AWS tomam - armazenar os templates do CloudFormation junto com os códigos da aplicação em um único repositório. Desse jeito, você tem apenas um lugar onde todas as mudanças na aplicação e no ambiente podem ser mapeadas juntas.
+
+Mas, se você olhar o código dentro do arquivo `streamProcessor.py`, você perceberá que ele está usando o pacote `requests` do Python para fazer uma API para o serviço Mythical Mysfits criado previamente. Bibliotecas externas não são automaticamente incluidas no ambiente da AWS Lambda. Você precisará empacotar todas as dependências juntas com o código da função Lambda. Nós usaremos o gerenciador de pacotes do Python `pip`. No terminal do Cloud9, rode os seguintes comandos para instalar o pacote `requests`:
 
 ```
 pip install requests -t .
 ```
+Uma vez que o comando completa, você vai ver vários pacotes adicionais armazenado no seu repositório.
 
-Once this command completes, you will see several additional python package folders stored within your repository directory.  
+#### Atualize o Código da Função Lambda
 
-#### Update the Lambda Function Code
-Next, we have one code change to make prior to our Lambda function code being completely ready for deployment.  There is a line within the `streamProcessor.py` file that needs to be replaced with the ApiEndpoint for your Mysfits service API - the same service ApiEndpoint that you created in module-4 and used on the website frontend.  Be sure to update the file you have copied into the new StreamingService repository directory.
+Agora, nós temos uma mudança no código para tornar a função Lambda pronta para o deploy. Existe uma linha no arquivo `streamProcessor.py` que precisa ser substituída com o ApiEndpoint do seu serviço - o mesmo ApiEndpoint que você criou no módulo 4 e foi usado no frontend do site. Assegure-se que você salvou o arquivo que você copiou no seu repositório. 
 
 ![replace me](/images/module-5/replace-api-endpoint.png)
 
-That service is responsible for integrating with the MysfitsTable in DynamoDB, so even though we could write a Lambda function that directly integrated with the DynamoDB table as well, doing so would intrude upon the purpose of the first microservice and leave us with multiple/separate code bases that integrated with the same table.  Instead, we will integrate with that table through the existing service and have a much more decoupled and modular application architecture.
+Esse serviço é responsável por integrar com o MysfitsTable no DynamoDB, assim mesmo que nós escrevêssemos uma função Lambda que integra diretamente com a tabela do DynamoDB. Nós vamos integrar a tabela com o serviço existente e ter uma arquitetura de aplicação muito mais modular e desacoplada.
 
-#### Push Your Code into CodeCommit
-Let's commit our code changes to the new repository so that they're saved in CodeCommit:
+#### Coloque seu Código no CodeCommit
+
+Vamos colocar nossas mudanças no código no novo repositório e então salva-las no CodeCommit:
 
 ```
 git add .
@@ -108,13 +115,13 @@ git commit -m "New stream processing service."
 git push
 ```
 
-### Creating the Streaming Service Stack
+### Criando um Stack de Serviço de Streaming
 
+#### Crie um Bucket S3 para a função Lambda e do Pacotes
 
-#### Create an S3 Bucket for Lambda Function Code Packages
-With that line changed in the Python file, and our code committed, we are ready to use the AWS SAM CLI to package all of our function code, upload it to S3, and create the deployable CloudFormation template to create our streaming stack.
+Com o arquivo Python com a linha mudada, nós estamos prontos para usar o AWS SAM CLI para empacotar todos os códigos de suas funções, fazer o upload para o S3, e criar o template do CloudFormation para criar nosso streaming stack.
 
-First, use the AWS CLI to create a new S3 bucket where our Lambda function code packages will be uploaded to.  S3 bucket names need to be globally unique among all AWS customers, so replace the end of this bucket name with a string that's unique to you:
+Primeiro, use o AWS CLI para criar um novo bucket S3 onde sua função Lambda vai ser uploaded. Nomes de buckets S3 precisam ser globalmente únicos ao longo de todos os clientes da AWS, então substitua o fim desse nome de bucket com uma string que é única para você:
 
 ```
 aws s3 mb s3://REPLACE_ME_YOUR_BUCKET_NAME/
@@ -122,56 +129,57 @@ aws s3 mb s3://REPLACE_ME_YOUR_BUCKET_NAME/
 
 #### Use the SAM CLI to Package your Code for Lambda
 
-With our bucket created, we are ready to use the SAM CLI to package and upload our code and transform the CloudFormation template, be sure to replace the last command parameter with the bucket name you just created above (this command also assumes your terminal is still in the repository working directory):
+Com nosso bucket criado, nós estamos prontos para usar o SAM CLI para empacotar e fazer o upload do nosso código e transformar o template do CloudFormation, lembre-se de substituir o último parametro de comando com o nome do bucket que você criou anteriormente:
 
 ```
 sam package --template-file ./real-time-streaming.yml --output-template-file ./transformed-streaming.yml --s3-bucket REPLACE_ME_YOUR_BUCKET_NAME
 ```
 
-If successful, you will see the newly created `transformed-streaming.yml` file exist within the `./MythicalMysfitsStreamingService-Repository/` directory, if you look in its contents, you'll see that the CodeUri parameter of the serverless Lambda function has been updated with the object location where the SAM CLI has uploaded your packaged code.
+Se com sucesso, você verá um novo arquivo `transformed-streaming.yml` no diretório `./MythicalMysfitsStreamingService-Repository/`, se você checar os conteúdos, verá que o paramentro CodeUri da função Lambda foi atualizada com a locação do objeto em que o SAM CLI foi uploaded.
 
-#### Deploy the Stack using AWS CloudFormation
+#### Faça o Deploy do Stack usando o AWS CloudFormation
 
-Also returned by the SAM CLI command is the CloudFormation command needed to be executed to create our new full stack.  But because our stack creates IAM resources, you'll need to add one additional parameter to the command.  Execute the following command to deploy the streaming stack:
+Execute o seguinte comando para fazer o deploy do stack de streaming:
 
 ```
 aws cloudformation deploy --template-file /home/ec2-user/environment/MythicalMysfitsStreamingService-Repository/transformed-streaming.yml --stack-name MythicalMysfitsStreamingStack --capabilities CAPABILITY_IAM
 ```
 
-Once this stack creation is complete, the full real-time processing microservice will be created.  
+Uma vez que a criação do stack estiver completa, o microsserviço de processamento em tempo real será criado.
 
-In future scenarios where only code changes have been made to your Lambda function, and the rest of your CloudFormation stack remains unchanged, you can repeat the same AWS SAM CLI and CloudFormation commands as above. This will result in the infrastructure environment remaining unchanged, but a code deployment occurring to your Lambda function.
 
-### Sending Mysfit Profile Clicks to the Service
+### Enviando Cliques de Perfis de Mysfit para o Serviço
 
-#### Update the Website Content
-With the streaming stack up and running, we now need to publish a new version of our Mythical Mysfits frontend that includes the JavaScript that sends events to our service whenever a mysfit profile is clicked by a user.
+#### Atualizando o Conteúdo do Site
 
-The new index.html file is included at: `~/environment/aws-modern-application-workshop/module-5/web/index.html`
+Com o stack de stremaing rodando, nós agora precisamos publicar uma nova versão do frontend do Mythical Mysfits que inclui o JavaScript que envia eventos para nosso serviço sempre que um perfil de mysfit é clicado por um usuário.
 
-This file contains the same placeholders as module-4 that need to be updated, as well as an additional placeholder for the new stream processing service endpoint you just created.  For the previous variable values, you can refer to the previous `index.html` file you updated as part of module-4.
+O novo arquivo index.html está incluso em: `~/environment/aws-modern-application-workshop/module-5/web/index.html`
 
-Perform the following command for the new streaming stack to retrieve the new API Gateway endpoint for your stream processing service:
+Para os valores anteriores de variáveis, você pode referir ao arquivo `index.html` anterior que você atualizou no módulo 4.
+
+Performe o seguinte comando para o novo stack de streaming para recuperar o novo endpoint do API Gateway:
 
 ```
 aws cloudformation describe-stacks --stack-name MythicalMysfitsStreamingStack
 ```
 
-#### Push the New Site Version to S3
-Replace the final value within `index.html` with the streamingApiEndpoint and you are ready to publish your final Mythical Mysfits home page update:
+#### Coloque a nova versão do Site no S3
+
+Substitua o valor final dentro do arquivo `index.html` com o streamingApiEndpoint. Agora você está pronto para publicar a atualização final da home page do Mythical Mysfits:
 
 ```
 aws s3 cp ~/environment/aws-modern-application-workshop/module-5/web/index.html s3://YOUR-S3-BUCKET/
 ```
 
-Refresh your Mythical Mysfits website in the browser once more and you will now have a site that records and publishes each time a user clicks on a mysfits profile!
+Recarregue o site Mythical Mysfits em seu browser uma outra vez e você agora terá um site que grava e publica cada vez que um usuário clica em um perfil de mysfit! 
 
-To view the records that have been processed, they will arrive in the destination S3 bucket created as part of your MythicalMysfitsStreamingStack.  Visit the S3 console here and explore the bucket you created for the streaming records (it will be prefixed with `mythicalmysfitsstreamings-clicksdestinationbucket`):
+Para ver as gravações que foram processados, eles chegarão ao bucket S3 de destino como parte do seu MythicalMysfitsStreamingStack. Visite o console do S3 e explore o bucket que você criou para os registros de streaming (ele terá o prefixo `mythicalmysfitsstreamings-clicksdestinationbucket`):
 [Amazon S3 Console](https://s3.console.aws.amazon.com/s3/home)
 
-This concludes Module 5.
+Isso concluí o Módulo 5.
 
-### [Proceed to Module 6](/module-6)
+### [Prossiga para o Módulo 5](/module-6)
 
 
 #### [AWS Developer Center](https://developer.aws)

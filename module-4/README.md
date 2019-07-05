@@ -1,49 +1,50 @@
-# Module 4: Adding User and API features with Amazon API Gateway and AWS Cognito
+# Módulo 4 - Adicionando funcionalidades de Usuário e API com o Amazon API Gateway e AWS Cognito
 
 ![Architecture](/images/module-4/architecture-module-4.png)
 
-**Time to complete:** 60 minutes
+**Tempo esperado:** 60 minutos
 
-**Services used:**
+**Serviços usados:**
 * [Amazon Cognito](http://aws.amazon.com/cognito/)
 * [Amazon API Gateway](https://aws.amazon.com/api-gateway/)
 * [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/)
 
-### Overview
+### Resumo
 
-In order to add some more critical aspects to the Mythical Mysfits website, like allowing users to vote for their favorite mysfit and adopt a mysfit, we need to first have users register on the website.  To enable registration and authentication of website users, we will create a [**User Pool**](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-identity-pools.html) in [**AWS Cognito**](http://aws.amazon.com/cognito/) - a fully managed user identity management service.  Then, to make sure that only registered users are authorized to like or adopt mysfits on the website, we will deploy an REST API with [**Amazon API Gateway**](https://aws.amazon.com/api-gateway/) to sit in front of our NLB. Amazon API Gateway is also a managed service, and provides commonly required REST API capabilities out of the box like SSL termination, request authorization, throttling, API stages and versioning, and much more.
+Para adicionar alguns outros aspectos críticos para o site Mythical Mysfits, como permitir usuários a votar para os seu mysfit favorito e adotar um determinado mysfit, nós precisamos primeiro ter usuários registrados no site. Pra permitir registros e autenticações de usuários do site, nós vamos criar uma [**User Pool**](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-identity-pools.html) no [**AWS Cognito**](http://aws.amazon.com/cognito/) - um serviço de gerenciamento de usuários gerenciado. Então, para assegurar que apenas usuários registrados são autorizados a darem like ou adotarem mysfits no site, nós vamos criar um REST API com [**Amazon API Gateway**](https://aws.amazon.com/api-gateway/) para ficar na frente de nosso NLB. Amazon API Gateway é também um serviço gerenciado, ele provê terminação SSL, autorização de requisições, throttling, stages e versionamento de API, e muito mais.
 
-### Adding a User Pool for Website Users
+### Adicionando uma User Pool no Website
 
-#### Create the Cognito User Pool
+#### Crie um User Pool no Cognito
 
-To create the **Cognito User Pool** where all of the Mythical Mysfits visitors will be stored, execute the following CLI command to create a user pool named *MysfitsUserPool* and indicate that all users who are registered with this pool should automatically have their email address verified via confirmation email before they become confirmed users.
+Para criar o **Cognito User Pool** em que todos os visitantes do Mythical Mysfits vão estar armazenados, execute o seguinte comando CLI para criar a user pool *MysfitsUserPool* e indicar que todos os usuários registrados nessa pool devem, automaticamente, ter seus endereços de email verificados via confirmação de email antes de serem confirmados como usuários.  
 
 ```
 aws cognito-idp create-user-pool --pool-name MysfitsUserPool --auto-verified-attributes email
 ```
-Copy the response from the above command, which includes the unique ID for your user pool that you will need to use in later steps. Eg: `Id: us-east-1_ab12345YZ`
+Copie a resposta do comando anterior, ela inclui o ID único do seu user pool que você vai precisar usar em passos posteriores. Ex: `Id: us-east-1_ab12345YZ`
 
-#### Create a Cognito User Pool Client
+#### Crie o Client da Cognito User Pool
 
-Next, in order to integrate our frontend website with Cognito, we must create a new **User Pool Client** for this user pool. This generates a unique client identifier that will allow our website to be authorized to call the unauthenticated APIs in cognito where website users can sign-in and register against the Mythical Mysfits user pool.  To create a new client using the AWS CLI for the above user pool, run the following command (replacing the `--user-pool-id` value with the one you copied above):
+Agora, para integrar nosso frontend com o Cognito, nós precisamos criar um novo **User Pool Client** para essa user pool. Isso gera um identificador único que permitirá nosso site a ser autorizado para chamar as APIs não autenticadas no cognito onde os usuários do site podem se registrar e fazer log-in. Para criar um novo client usando o AWS CLI para a user pool anterior, rode o seguinte comando (substituindo o valor `--user-pool-id` com o que você copiou anteriormente):
 
 ```
 aws cognito-idp create-user-pool-client --user-pool-id REPLACE_ME --client-name MysfitsUserPoolClient
 ```
 
-### Adding a new REST API with Amazon API Gateway
+### Adicionando uma nova REST API com Amazon API Gateway
 
-#### Create an API Gateway VPC Link
-Next, let's turn our attention to creating a new RESTful API in front of our existing Flask service, so that we can perform request authorization before our NLB receives any requests.  We will do this with **Amazon API Gateway**, as described in the module overview.  In order for API Gateway to privately integrate with our NLB, we will configure an **API Gateway VPC Link** that enables API Gateway APIs to directly integrate with backend web services that are privately hosted inside a VPC. **Note:** For the purposes of this workshop, we created the NLB to be *internet-facing* so that it could be called directly in earlier modules. Because of this, even though we will be requiring Authorization tokens in our API after this module, our NLB will still actually be open to the public behind the API Gateway API.  In a real-world scenario, you should create your NLB to be *internal* from the beginning (or create a new internal load balancer to replace the existing one), knowing that API Gateway would be your strategy for Internet-facing API authorization.  But for the sake of time, we'll use the NLB that we've already created that will stay publicly accessible.
+#### Crie um API Gateway VPC Link
 
-Create the VPC Link for our upcoming REST API using the following CLI command (you will need to replace the indicated value with the Load Balancer ARN you saved when the NLB was created in module 2):
+Agora, vamos tomar nossa atenção para criar uma nova RESTful API na frente do nosso serviço Flask existente, então nós podemos performar uma requisição de autorização antes de nosso NLB receber qualquer requisição. Nós faremos isso com o **Amazon API Gateway**, assim como dito no resumo do módulo. Para que o API Gateway integre-se de maneira privada com nosso NLB, nós iremos configurar um **API Gateway VPC Link** que permite APIs do API Gateway integrar diretamente com serviços do backend que estão hospedados dentro de uma VPC. **Obs:** Para o propósito desse workshop, nós criamos o NLB como *internet-facing* o que o deixou ser chamado diretamente nos módulos anteriores. Por causa disso, mesmo com nós requisitando tokens de autenticação após esse módulo, nosso NLB continuará estando aberto para acesso público atrás da API do API Gateway. Em um cenário de mundo real, você deverá criar seu NLB como *internal* desde o começo (ou criar um novo internal load balancer para substituir o já existente), sabendo isso o API Gateway seria sua estratégia para autorização de API Internet-facing. Mas por uma questão de tempo, nós usaremos o NLB que já criamos anteriormente e persiste acessível publicamente. 
+
+Crie um VPC Link para nossa futura REST API usando o seguinte comando CLI (você vai precisar substituir o valor indicado com o ARN do Load Balancer que você salvou quando o NLB foi criado no Módulo 2): 
 
 ```
 aws apigateway create-vpc-link --name MysfitsApiVpcLink --target-arns REPLACE_ME_NLB_ARN > ~/environment/api-gateway-link-output.json
 ```
 
-The above command will create a file called `api-gateway-link-output.json` that contains the `id` for the VPC Link that is being created.  It will also show the status as `PENDING`, similar to below.  It will take about 5-10 minutes to finish being created, you can copy the `id` from this file and proceed on to the next step.
+O comando anterior vai criar um arquivo chamado `api-gateway-link-output.json` que contém o `id` para o VPC Link que está sendo criado. Isso também irá mostrar o status como `PENDING`, similar ao que está sendo mostrado abaixo. Isso vai tomar cerca de 5-10 minutos para terinar de ser criado, você pode copiar o `id` desse arquivo e proceder para o próximo passo.
 
 ```
 {
@@ -54,25 +55,25 @@ The above command will create a file called `api-gateway-link-output.json` that 
     "id": "abcdef1",
     "name": "MysfitsApiVpcLink"
 }
-```
+``` 
 
-With the VPC link creating, we can move on to create the actual REST API using Amazon API Gateway.  
+Com o VPC Link criado, nós podemos criar a REST API real usando o Amazon API Gateway.
 
-#### Create the REST API using Swagger
+#### Crie uma REST API usando Swagger
 
-Your MythicalMysfits REST API is defined using **Swagger**, a popular open-source framework for describing APIs via JSON.  This Swagger definition of the API is located at `~/environment/aws-modern-applicaiton-workshop/module-4/aws-cli/api-swagger.json`.  Open this file and you'll see the REST API and all of its resources, methods, and configuration defined within.  
+Sua REST API MythicalMysfits é definida usando **Swagger**, um popular framework open-source para descrição de APIs via JSON. Esse Swagger com a definição da API está localizada em `~/environment/aws-modern-applicaiton-workshop/module-4/aws-cli/api-swagger.json`. Abra esse arquivo, você verá a REST API e todos seus recursos, métodos e configurações.  
 
-There are several places within this JSON file that need to be updated to include parameters specific to your Cognito User Pool, as well as your Network Load Balancer.  
+Existem diversos espaços em um arquivo JSON que precisam ser atualizados para incluir parametros específicos para o seu Cognito User Pool, assim como seu Network Load Balancer.    
 
-The `securityDefinitions` object within the API definition indicates that we have setup an apiKey authorization mechanism using the Authorization header.  You will notice that AWS has provided custom extensions to Swagger using the prefix `x-amazon-api-gateway-`, these extensions are where API Gateway specific functionality can be added to typical swagger files to take advantage of API Gateway-specific capabilities.
+O objeto `securityDefinitions` presente na definição da API indica que nós configuramos um mecanismo de autorização de apiKey usando o Authorization header. Você perceberá que a AWS provê extensões customizadas para Swagger usando o prefixo `x-amazon-api-gateway-`.
 
-CTRL-F through the file to search for the various places `REPLACE_ME` is located and awaiting your specific parameters.  Once the edits have been made, save the file and execute the following AWS CLI command:
+Pressione CTRL-F no arquivo para procurar os vários `REPLACE_ME` presentes. Substitua-los pelos parâmetros específicos condizentes. Uma vez terminado, salve o arquivo e execute o seguinte comando AWS CLI: 
 
 ```
 aws apigateway import-rest-api --parameters endpointConfigurationTypes=REGIONAL --body file://~/environment/aws-modern-application-workshop/module-4/aws-cli/api-swagger.json --fail-on-warnings
 ```
 
-Copy the response this command returns and save the `id` value for the next step:
+Copie a resposta desse comando e salve o valor do `id` para o próximo passo:
 
 ```
 {
@@ -87,30 +88,30 @@ Copy the response this command returns and save the `id` value for the next step
 }
 ```
 
-#### Deploy the API
+#### Deploy da API
 
-Now, our API has been created, but it's yet to be deployed anywhere. To deploy our API, we must first create a deployment and indicate which **stage** the deployment is fore.  A stage is a named reference to a deployment, which is a snapshot of the API. You use a Stage to manage and optimize a particular deployment. For example, you can set up stage settings to enable caching, customize request throttling, configure logging, define stage variables or attach a canary release for testing.  We will call our stage `prod`. To create a deployment for the prod stage, execute the following CLI command:
+Agora, nossa API já foi criada, mas ainda está para ser implantada em qualquer lugar. Para fazer o deploy de nossa API, nós precisamos primeiro criar o deployment e indicar qual **stage** desse deployment. Um Stage é uma referencia para o deployment, basicamente é uma snapshot da API. Um Stage é usado para gerenciar e otimizar um deployment particular. Por exemplo, você pode alterar as configurações de um stage para permitir caching, customizar throttling de requisições, configurar logging ou definir variáveis do stage. Vamos chamar nosso stage `prod`. Para criar o deployment para o prod stage, execute o seguinte comando CLI:
 
 ```
 aws apigateway create-deployment --rest-api-id REPLACE_ME_WITH_API_ID --stage-name prod
 ```
 
-With that, our REST API that's capable of user Authorization is deployed and available on the Internet... but where?!  Your API is available at the following location:
+Com isso, nossa REST API que é capaz de fazer a autorização do usuário está disponível e rodando... mas onde?! Sua API está disponível no seguinte endereço:
 
 ```
 https://REPLACE_ME_WITH_API_ID.execute-api.REPLACE_ME_WITH_REGION.amazonaws.com/prod
 ```
 
-Copy the above, replacing the appropriate values, and add `/mysfits` to the end of the URI.  Entered into a browser address bar, you should once again see your Mysfits JSON response.  But, we've added several capabilities like adopting and liking mysfits that our Flask service backend doesn't have implemented yet.
+Copie o endereço anterior, substituindo os valores apropriados, e adicione `/mysfits` no fim da URI. Cole isso em seu browser, você deve ver novamente sua resposta JSON dos Mysfits. Mas, nós adicionamos diversas funcionalidade como adoção e like de mysfits que nosso serviço Flask do backend ainda não implementa.
 
-Let's take care of that next.
+Vamos resolver isso agora.
 
 
-### Updating the Mythical Mysfits Website
+### Atualizando o Site Mythical Mysfits
 
-#### Update the Flask Service Backend
+#### Atualizando o Flask Service Backend
 
-To accommodate the new functionality to view Mysfit Profiles, like, and adopt them, we have included updated Python code for your backend Flask web service.  Let's overwrite your existing codebase with these files and push them into the repository:
+Para acomodar as novas funcionalidades para ver os perfis dos Mysfits, likes e adoções, nós precisamos incluir o código python atualizado para nosso backend. Vamos sobrescrever sua base de código já existente com esses arquivos e colocalos no repositório:
 
 ```
 cd ~/environment/MythicalMysfitsService-Repository/
@@ -132,30 +133,31 @@ git commit -m "Update service code backend to enable additional website features
 git push
 ```
 
-While those service updates are being automatically pushed through your CI/CD pipeline, continue on to the next step.
+Enquanto essas atualizações no serviço estão sendo automaticamente depositadas no seu Pipeline de Ci/CD, continue para o próximo passo.
+
 
 #### Update the Mythical Mysfits Website in S3
 
-Open the new version of the Mythical Mysfits index.html file we will push to S3 shortly, it is located at: `~/environment/aws-modern-application-workshop/module-4/app/web/index.html`
-In this new index.html file, you'll notice additional HTML and JavaScript code that is being used to add a user registration and login experience.  This code is interacting with the AWS Cognito JavaScript SDK to help manage registration, authentication, and authorization to all of the API calls that require it.
+Abra a nova versão do index.html do Mythical Mysfits que nós colocaremos no S3 em breve, ela está localizada em: `~/environment/aws-modern-application-workshop/module-4/app/web/index.html`.
+Nesse novo index.html, você irá perceber códigos HTML e JavaScript adicionais que estão sendo usados para adicionar as funcionalidades de registro e login de usuários. Esse código está interagindo com o SDK do JavaScript do AWS Cognito para ajudar a gerenciar o registro, autenticação, e autorização para todas as chamadas API que precisam disso. 
 
-In this file, replace the strings **REPLACE_ME** inside the single quotes with the OutputValues you copied from above and save the file:
+Nesse arquivo, substitua os **REPLACE_ME** com os OutputValues que você copiou anteriormente dentro de aspas simples e salve o arquivo:
 
 ![before-replace](/images/module-4/before-replace.png)
 
-Also, for the user registration process, you have an additional two HTML files to insert these values into.  `register.html` and `confirm.html`.  Insert the copied values into the **REPLACE_ME** strings in these files as well.
+Também, para o processo de registro, você tem dois outros arquivos HTML adicionais para inserir esses valores dentro. `register.html` e `confirm.html`. Insira os valores copiados no **REPLACE_ME** nesses arquivos também.
 
-Now, lets copy these HTML files, as well as the Cognito JavaScript SDK to the S3 bucket hosting our Mythical Mysfits website content so that the new features will be published online.
+Agora, vamos copiar esses arquivos HTML, assim como o JavaScript SDK do Cognito para o bucket S3 que está hospedando nosso site, então as novas funcionalidades serão publicadas online.
 
 ```
 aws s3 cp --recursive ~/environment/aws-modern-application-workshop/module-4/web/ s3://YOUR-S3-BUCKET/
 ```
 
-Refresh the Mythical Mysfits website in your browser to see the new functionality in action!
+Recarregue o site do Mythical Mysfits no seu browser para ver as novas funcionalidades em ação!
 
-This concludes Module 4.
+Isso concluí o Módulo 4.
 
-[Proceed to Module 5](/module-5)
+[Prossiga para o Módulo 5](/module-5)
 
 
 ## [AWS Developer Center](https://developer.aws)
