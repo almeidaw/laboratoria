@@ -92,7 +92,7 @@ aws s3 website s3://REPLACE_ME_BUCKET_NAME --index-document index.html
 
 Todos os buckets criados no Amazon S3 são totalmente privados por padrão. Para que possam ser usados como um site público, nós precisamos criar uma [Politica](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) para o bucket S3 que indica que objetos armazenados dentro desse novo bucket podem ser acessados publicsamente por qualquer pessoa. Políticas de Bucket são representadas como documentos JSON que definam as *Ações* do S3 (chamadas API do S3) que possuem permissão (ou não possuem permissão) para serem feitas por diferentes *Principals* (no nosso caso o público, ou qualquer pessoa).
 
-The JSON document for the necessary bucket policy is located at: `~/environment/aws-modern-application-workshop/module-1/aws-cli/website-bucket-policy.json`.  This file contains a string that needs to be replaced with the bucket name you've chosen (indicated with `REPLACE_ME_BUCKET_NAME`).  
+O documento JSON para a política necessária para o bucket está localizada em: `~/environment/aws-modern-application-workshop/module-1/aws-cli/website-bucket-policy.json`. Esse arquivo contêm a string que deve ser substituida com o nome do bucket que você criou (indicado com `REPLACE_ME_BUCKET_NAME`).
 
 Para **abrir um arquivo** no Cloud9, use o Explorador de Arquivos no painel esquerdo e clique duas vezes sobre `website-bucket-policy.json`:
 
@@ -103,13 +103,13 @@ Isso abrirá o `bucket-policy.json` no painel de Edição de Arquivo. Substitua 
 ![replace-bucket-name.png](/images/module-1/replace-bucket-name.png)
 
 
-Execute o sewguinte comando CLI command para adicionar uma política de acesso público ao bucket do seu site:
+Execute o seguinte comando CLI command para adicionar uma política de acesso público ao bucket do seu site:
 
 ```
 aws s3api put-bucket-policy --bucket REPLACE_ME_BUCKET_NAME --policy file://~/environment/aws-modern-application-workshop/module-1/aws-cli/website-bucket-policy.json
 ```
 
-#### Publique o Cointeúdo do Website no S3
+#### Publique o Conteúdo do Website no S3
 
 Agora que nosso novo bucket do site está apropriadamente configurado, vamos adicionar a primeira versão da homepage Mythical Mysfits homepage ao bucket. Use o seguinte comando S3 CLI que imita o comando do linux para copiar arquivos (**cp**) para copiar a página index.html fornecida do seu IDE para o seu novo bucket S3 (substituindo o nome  do bucket apropriadamente).
 
