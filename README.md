@@ -28,7 +28,7 @@ Você irá criar e fazer o deploy de mudanças em sua aplicação de maneira tot
 
 ## Começar o Workshop de Aplicação Moderna
 
-### [Ir para o Módulo 1](/module-1)
+### [Prossiga para o Módulo 1](/module-1)
 
 
 ### Limpeza do Workshop (Uma vez que você tenha terminado)
@@ -58,7 +58,7 @@ Para remover todos os recursos criados você pode visitar os seguintes consoles 
 * [Amazon CloudFront](https://console.aws.amazon.com/cloudfront/home)
 
 
-[Ir para o Módulo 1](/module-1)
+[Prossiga para o Módulo 1](/module-1)
 
 
 ## [Centro do desenvolvedor da AWS](https://developer.aws)
