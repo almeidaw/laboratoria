@@ -90,7 +90,7 @@ aws s3 website s3://REPLACE_ME_BUCKET_NAME --index-document index.html
 
 #### Atualize as Políticas do Bucket S3
 
-Todos os buckets criados no Amazon S3 são totalmente privados por padrão. Para que possam ser usados como um site público, nós precisamos criar uma [Politica](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) para o bucket S3 que indica que objetos armazenados dentro desse novo bucket podem ser acessados publicsamente por qualquer pessoa. Políticas de Bucket são representadas como documentos JSON que definam as *Ações* do S3 (chamadas API do S3) que possuem permissão (ou não possuem permissão) para serem feitas por diferentes *Principals* (no nosso caso o público, ou qualquer pessoa).
+Todos os buckets criados no Amazon S3 são totalmente privados por padrão. Para que possam ser usados como um site público, nós precisamos criar uma [Politica](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) para o bucket S3 que indica que objetos armazenados dentro desse novo bucket podem ser acessados publicamente por qualquer pessoa. Políticas de Bucket são representadas como documentos JSON que definam as *Ações* do S3 (chamadas API do S3) que possuem permissão (ou não possuem permissão) para serem feitas por diferentes *Principals* (no nosso caso o público, ou qualquer pessoa).
 
 O documento JSON para a política necessária para o bucket está localizada em: `~/environment/aws-modern-application-workshop/module-1/aws-cli/website-bucket-policy.json`. Esse arquivo contêm a string que deve ser substituida com o nome do bucket que você criou (indicado com `REPLACE_ME_BUCKET_NAME`).
 
@@ -117,7 +117,7 @@ Agora que nosso novo bucket do site está apropriadamente configurado, vamos adi
 aws s3 cp ~/environment/aws-modern-application-workshop/module-1/web/index.html s3://REPLACE_ME_BUCKET_NAME/index.html
 ```
 
-Agora, abra seu navegador favorito e insiora uma das URIs abaixo na barra de endereços. Uma das URIs abaixo tem um '.' antes do nome da região, e as outras têm '-'. Qual dela vocês deve usar vai depender da região que você estiver usando.
+Agora, abra seu navegador favorito e insira uma das URIs abaixo na barra de endereços. Uma das URIs abaixo tem um '.' antes do nome da região, e as outras têm '-'. Qual dela vocês deve usar vai depender da região que você estiver usando.
 
 A string a ser substituida **REPLACE_ME_YOUR_REGION** deve estar de acordo com a região onde que você criou o seu bucket S3 (por exemplo: us-east-1):
 
